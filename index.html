@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的网站</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-gray-800">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between">
+                <div class="flex space-x-7">
+                    <a href="#" class="flex items-center py-4 px-2">
+                        <span class="font-semibold text-gray-500 text-lg">我的网站</span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="#" class="py-4 px-2 text-blue-500 border-b-4 border-blue-500 font-semibold">首页</a>
+                    <a href="#" class="py-4 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300">关于</a>
+                    <a href="#" class="py-4 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300">服务</a>
+                    <a href="#" class="py-4 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300">联系</a>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button class="outline-none mobile-menu-button">
+                        <i class="fas fa-bars text-gray-500 text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <section class="hero text-white py-20">
+        <div class="container mx-auto px-6 text-center">
+            <h1 class="text-4xl font-bold mb-2">欢迎来到我的网站</h1>
+            <p class="text-xl mb-8">这是一个现代化的响应式网站模板</p>
+            <button class="bg-white text-blue-800 font-bold rounded-full py-3 px-8 shadow-lg uppercase tracking-wider hover:bg-gray-100 transition-all">
+                了解更多
+            </button>
+        </div>
+    </section>
+
+    <!-- 主要内容 -->
+    <section class="container mx-auto px-6 py-10">
+        <h2 class="text-3xl font-bold text-center mb-8">我们的服务</h2>
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- 卡片1 -->
+            <div class="card bg-white rounded-lg shadow-md overflow-hidden transition-all">
+                <img src="https://picsum.photos/600/400?random=1" alt="网页设计服务" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2">网页设计</h3>
+                    <p class="text-gray-600">专业的响应式网页设计，适配各种设备屏幕尺寸。</p>
+                </div>
+            </div>
+            
+            <!-- 卡片2 -->
+            <div class="card bg-white rounded-lg shadow-md overflow-hidden transition-all">
+                <img src="https://picsum.photos/600/400?random=2" alt="前端开发服务" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2">前端开发</h3>
+                    <p class="text-gray-600">使用最新技术栈构建高性能的前端应用。</p>
+                </div>
+            </div>
+            
+            <!-- 卡片3 -->
+            <div class="card bg-white rounded-lg shadow-md overflow-hidden transition-all">
+                <img src="https://picsum.photos/600/400?random=3" alt="UI/UX设计服务" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2">UI/UX设计</h3>
+                    <p class="text-gray-600">打造直观易用的用户界面和流畅的用户体验。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h2 class="text-xl font-semibold">我的网站</h2>
+                    <p class="text-gray-400 mt-2">© 2025 版权所有</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 移动端菜单切换
+        const mobileMenuButton = document.querySelector('.mobile-menu-button');
+        const mobileMenu = document.querySelector('.mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>
