@@ -1,1 +1,148 @@
-
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>比赛成绩表</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .hero {
+            background: #5072AE
+              /* linear-gradient(135deg, #5072AE 0%, #FED9C3 100%) */;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 14px 20px;
+            text-align: left;
+            border-bottom: 1px solid #edf2f7;
+        }
+        th {
+            background: #2d3748;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        tr:hover {
+            background: #f7fafc;
+        }
+        td a {
+            color: #2d3748;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        td a:hover {
+            text-decoration: underline;
+            color: #1a202c;
+        }
+        td span {
+            font-weight: 600;
+        }
+        td:last-child {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        h1 {
+            color: white;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .score_10 {
+            color: forestgreen;      /*rgb(34, 139, 34)*/
+        }
+        .score_9 {
+            color: #34d034;          /*rgb(52, 208, 52)*/
+        }
+        .score_8 {
+            color: #41f741;          /*rgb(65, 247, 65)*/
+        }
+        .score_7 {
+            color: #52ff00;          /*rgb(82, 255, 0)*/
+        }
+        .score_6 {
+            color: #a5ff00;          /*rgb(165, 255, 0)*/
+        }
+        .score_5 {
+            color: #c8ff00;          /*rgb(200, 255, 0)*/
+        }
+        .score_4 {
+            color: #ffd800;          /*rgb(255, 216, 0)*/
+        }
+        .score_3 {
+            color: #ffa900;          /*rgb(255, 169, 0)*/
+        }
+        .score_2 {
+            color: #ff6200;          /*rgb(255, 98, 0)*/
+        }
+        .score_1 {
+            color: #ff4b00;          /*rgb(255, 75, 0)*/
+        }
+        .score_0 {
+            color: red;              /*rgb(255, 0, 0)*/
+        }
+    </style>
+</head>
+<body class="hero font-sans antialiased text-gray-800 py-10">
+    <div class="container">
+        <h1 class="text-3xl font-bold">🏆 比赛（IOI）成绩表</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>📅 日期</th>
+                    <th>📊 分数</th>
+                    <th>🏅 排名</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a href="http://www.nflsoi.cc:20035/contest/2515" target="_blank">20260706</a></td>
+                    <td><span class="score_8">405/500</span></td>
+                    <td>6</td>
+                </tr>
+                <tr>
+                    <td><a href="http://www.nflsoi.cc:20035/contest/2516" target="_blank">20260708</a></td>
+                    <td><span class="score_5">200/400</span></td>
+                    <td>62</td>
+                </tr>
+                <tr>
+                    <td><a href="http://www.nflsoi.cc:20035/contest/2514" target="_blank">20260710</a></td>
+                    <td><span class="score_2">100/400</span></td>
+                    <td>154</td>
+                </tr>
+                <tr>
+                    <td><a href="http://www.nflsoi.cc:20035/contest/2508" target="_blank">20260711</a></td>
+                    <td><span class="score_5">230/400</span></td>
+                    <td>100</td>
+                </tr>
+                <tr>
+                    <td><a href="http://www.nflsoi.cc:20035/contest/2523" target="_blank">20260714</a></td>
+                    <td><span class="score_9">335/400</span></td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td><a href="http://www.nflsoi.cc:20035/contest/2527" target="_blank">20260716</a></td>
+                    <td><span class="score_8">310/400</span></td>
+                    <td>14</td>
+                </tr>
+                <tr>
+                    <td><a href="http://www.nflsoi.cc:20035/contest/2531" target="_blank">20260718</a></td>
+                    <td><span class="score_7">295/400</span></td>
+                    <td>19</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
