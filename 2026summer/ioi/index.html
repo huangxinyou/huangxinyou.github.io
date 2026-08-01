@@ -8,9 +8,64 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .hero {
-            background: linear-gradient(135deg, #5072AE 0%, #FED9C3 100%) ;
+            background: linear-gradient(135deg, #5072AE 0%, #AED9C3 100%) ;
           min-height: 100vh; /* 确保整个屏幕都有背景 */
         }
+            .hero {
+            /*
+              三层背景叠加：
+              1. 径向光晕（固定，增加景深感）
+              2. 大尺寸线性渐变（流动，产生变色效果）
+              3. 一个额外的径向光晕（缓慢移动，丰富色彩层次）
+            */
+            background:
+                /* 层3：移动的粉色光晕 */
+                radial-gradient(ellipse at 70% 30%, rgba(210, 170, 220, 0.25) 0%, transparent 50%),
+                /* 层2：移动的蓝色光晕 */
+                radial-gradient(ellipse at 20% 70%, rgba(120, 180, 230, 0.25) 0%, transparent 50%),
+                /* 层1：核心渐变 — 6种柔和颜色，大尺寸，流动 */
+                linear-gradient(135deg,
+                    #4A6FA5 0%,
+                    #7BA3C9 20%,
+                    #8FC9C9 40%,
+                    #AED9C3 60%,
+                    #D4C9AE 80%,
+                    #C9AED4 100%
+                ); 
+            background-size: 100% 100%, 100% 100%, 600% 600%;
+            background-position: 0% 0%, 0% 0%, 0% 0%;
+            min-height: 100vh;
+            animation: bgFlow 10s ease-in-out infinite alternate;
+        }
+
+        /* 核心流动动画：让大渐变在背景中缓慢漂移 */
+        @keyframes bgFlow {
+            0% {
+                /* 径向光晕1固定，径向光晕2固定，线性渐变起始位置 */
+                background-position: 0% 0%, 0% 0%, 0% 0%;
+            }
+            25% {
+                background-position: 0% 0%, 0% 0%, 100% 0%;
+            }
+            50% {
+                background-position: 0% 0%, 0% 0%, 100% 100%;
+            }
+            75% {
+                background-position: 0% 0%, 0% 0%, 0% 100%;
+            }
+            100% {
+                background-position: 0% 0%, 0% 0%, 50% 50%;
+            }
+        }
+      /* .hero {
+    background: 
+        radial-gradient(circle at 30% 40%, rgba(120, 180, 230, 0.6) 0%, transparent 60%),
+        radial-gradient(circle at 70% 60%, rgba(200, 230, 210, 0.6) 0%, transparent 60%),
+        radial-gradient(circle at 50% 80%, rgba(180, 140, 210, 0.4) 0%, transparent 50%),
+        linear-gradient(135deg, #5072AE, #8AB8C9, #AED9C3);
+    background-size: 300% 300%, 300% 300%, 300% 300%, 100% 100%;
+    animation: bgMove 20s ease-in-out infinite alternate;
+} */
         .container {
             max-width: 800px;
             margin: 0 auto;
