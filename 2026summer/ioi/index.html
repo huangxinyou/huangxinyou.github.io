@@ -6,34 +6,8 @@
     <title>比赛成绩表</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .hero {
-            background: linear-gradient(135deg, #5072AE 0%, #AED9C3 100%) ;
-          min-height: 100vh; /* 确保整个屏幕都有背景 */
-        }
+<style>
             .hero {
-            /*
-              三层背景叠加：
-              1. 径向光晕（固定，增加景深感）
-              2. 大尺寸线性渐变（流动，产生变色效果）
-              3. 一个额外的径向光晕（缓慢移动，丰富色彩层次）
-            */
-            background:
-                /* 层3：移动的粉色光晕 */
-                radial-gradient(ellipse at 70% 30%, rgba(210, 170, 220, 0.25) 0%, transparent 50%),
-                /* 层2：移动的蓝色光晕 */
-                radial-gradient(ellipse at 20% 70%, rgba(120, 180, 230, 0.25) 0%, transparent 50%),
-                /* 层1：核心渐变 — 6种柔和颜色，大尺寸，流动 */
-                linear-gradient(135deg,
-                    #4A6FA5 0%,
-                    #7BA3C9 20%,
-                    #8FC9C9 40%,
-                    #AED9C3 60%,
-                    #D4C9AE 80%,
-                    #C9AED4 100%
-                ); 
-            background-size: 100% 100%, 100% 100%, 600% 600%;
-            background-position: 0% 0%, 0% 0%, 0% 0%;
             min-height: 100vh;
             animation: bgFlow 10s ease-in-out infinite alternate;
         }
@@ -148,6 +122,63 @@
             color: red;              /*rgb(255, 0, 0)*/
         }
     </style>
+          <script>
+        /**
+         * 生成完全随机的 HSL 颜色（带透明度可选）
+         * 色相 0~360，饱和度 40%~80%，明度 50%~80%，色调柔和明亮
+         */
+        function randomHSL(alpha = 1) {
+            const h = Math.floor(Math.random() * 360);
+            const s = 40 + Math.floor(Math.random() * 41);  // 40~80
+            const l = 50 + Math.floor(Math.random() * 31);  // 50~80
+            if (alpha >= 1) return `hsl(${h}, ${s}%, ${l}%)`;
+            return `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
+        }
+
+        /**
+         * 生成完全随机的背景样式（三层叠加）
+         * - 两层径向光晕：位置、颜色、透明度均随机
+         * - 一层线性渐变：颜色数量 3~8 种，角度 0~360° 随机
+         */
+        function generateRandomBackground() {
+            // 光晕1：随机位置 (10%~90%)
+            const x1 = 10 + Math.random() * 80;
+            const y1 = 10 + Math.random() * 80;
+            // 光晕2
+            const x2 = 10 + Math.random() * 80;
+            const y2 = 10 + Math.random() * 80;
+
+            const glow1 = randomHSL(0.20 + Math.random() * 0.15);
+            const glow2 = randomHSL(0.20 + Math.random() * 0.15);
+
+            // 随机决定渐变颜色数量（3~8种）
+            const colorCount = 10 + Math.floor(Math.random() * 6);
+            const colors = [];
+            for (let i = 0; i < colorCount; i++) {
+                colors.push(randomHSL(1));
+            }
+
+            // 随机渐变角度（0~360度）
+            const angle = Math.floor(Math.random() * 360);
+
+            return `
+                radial-gradient(ellipse at ${x1}% ${y1}%, ${glow1} 0%, transparent 50%),
+                radial-gradient(ellipse at ${x2}% ${y2}%, ${glow2} 0%, transparent 50%),
+                linear-gradient(${angle}deg, ${colors.join(', ')})
+            `.trim();
+        }
+
+        // 页面加载时应用随机背景
+        document.addEventListener('DOMContentLoaded', function() {
+            const hero = document.querySelector('.hero');
+            if (hero) {
+                hero.style.background = generateRandomBackground();
+                // 固定背景尺寸，与动画兼容（光晕层 100% 100%，渐变层 600% 600% 用于漂移）
+                hero.style.backgroundSize = '100% 100%, 100% 100%, 600% 600%';
+                // 注意：background-position 由动画控制，无需设置
+            }
+        });
+    </script>
 </head>
 <body class="hero font-sans antialiased text-gray-800 py-10">
     <div class="container">
@@ -166,36 +197,43 @@
                     <td><a href="http://www.nflsoi.cc:20035/contest/2515" target="_blank">20260706</a></td>
                     <td><span class="score_8">405/500</span></td>
                     <td>6</td>
+                    <td><span class="score_10">500</span></td>
                 </tr>
                 <tr>
                     <td><a href="http://www.nflsoi.cc:20035/contest/2516" target="_blank">20260708</a></td>
                     <td><span class="score_5">200/400</span></td>
                     <td>62</td>
+                    <td><span class="score_6">255</span></td>
                 </tr>
                 <tr>
                     <td><a href="http://www.nflsoi.cc:20035/contest/2514" target="_blank">20260710</a></td>
                     <td><span class="score_2">100/400</span></td>
                     <td>154</td>
+                    <td><span class="score_7">300</span></td>
                 </tr>
                 <tr>
                     <td><a href="http://www.nflsoi.cc:20035/contest/2508" target="_blank">20260711</a></td>
                     <td><span class="score_5">230/400</span></td>
                     <td>100</td>
+                    <td><span class="score_7">300</span></td>
                 </tr>
                 <tr>
                     <td><a href="http://www.nflsoi.cc:20035/contest/2523" target="_blank">20260714</a></td>
                     <td><span class="score_9">335/400</span></td>
                     <td>3</td>
+                    <td><span class="score_8">335</span></td>
                 </tr>
                 <tr>
                     <td><a href="http://www.nflsoi.cc:20035/contest/2527" target="_blank">20260716</a></td>
                     <td><span class="score_8">310/400</span></td>
                     <td>14</td>
+                    <td><span class="score_7">310</span></td>
                 </tr>
                 <tr>
                     <td><a href="http://www.nflsoi.cc:20035/contest/2531" target="_blank">20260718</a></td>
                     <td><span class="score_7">295/400</span></td>
                     <td>19</td>
+                    <td><span class="score_7">295</span></td>
                 </tr>
             </tbody>
         </table>
