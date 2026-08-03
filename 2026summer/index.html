@@ -1,76 +1,25 @@
 <!DOCTYPE html>
-<html ="zh-CN">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>比赛成绩表</title>
+    <title>比赛成绩表 · 综合</title>
+    <!-- 保留你原来的 Tailwind 和 Font Awesome -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* ===== 完全沿用你 IOI 页面的样式（背景由 JS 动态生成） ===== */
         .hero {
-            background: linear-gradient(135deg, #5072AE 0%, #AED9C3 100%) ;
-          min-height: 100vh; /* 确保整个屏幕都有背景 */
-        }
-            .hero {
-            /*
-              三层背景叠加：
-              1. 径向光晕（固定，增加景深感）
-              2. 大尺寸线性渐变（流动，产生变色效果）
-              3. 一个额外的径向光晕（缓慢移动，丰富色彩层次）
-            */
-            background:
-                /* 层3：移动的粉色光晕 */
-                radial-gradient(ellipse at 70% 30%, rgba(210, 170, 220, 0.25) 0%, transparent 50%),
-                /* 层2：移动的蓝色光晕 */
-                radial-gradient(ellipse at 20% 70%, rgba(120, 180, 230, 0.25) 0%, transparent 50%),
-                /* 层1：核心渐变 — 6种柔和颜色，大尺寸，流动 */
-                linear-gradient(135deg,
-                    #4A6FA5 0%,
-                    #7BA3C9 20%,
-                    #8FC9C9 40%,
-                    #AED9C3 60%,
-                    #D4C9AE 80%,
-                    #C9AED4 100%
-                ); 
-            background-size: 100% 100%, 100% 100%, 600% 600%;
-            background-position: 0% 0%, 0% 0%, 0% 0%;
             min-height: 100vh;
-            animation: bgFlow 10s ease-in-out infinite alternate;
+            /* 背景将在 JS 中设置，此处留空 */
         }
 
-        /* 核心流动动画：让大渐变在背景中缓慢漂移 */
-        @keyframes bgFlow {
-            0% {
-                /* 径向光晕1固定，径向光晕2固定，线性渐变起始位置 */
-                background-position: 0% 0%, 0% 0%, 0% 0%;
-            }
-            25% {
-                background-position: 0% 0%, 0% 0%, 100% 0%;
-            }
-            50% {
-                background-position: 0% 0%, 0% 0%, 100% 100%;
-            }
-            75% {
-                background-position: 0% 0%, 0% 0%, 0% 100%;
-            }
-            100% {
-                background-position: 0% 0%, 0% 0%, 50% 50%;
-            }
-        }
-      /* .hero {
-    background: 
-        radial-gradient(circle at 30% 40%, rgba(120, 180, 230, 0.6) 0%, transparent 60%),
-        radial-gradient(circle at 70% 60%, rgba(200, 230, 210, 0.6) 0%, transparent 60%),
-        radial-gradient(circle at 50% 80%, rgba(180, 140, 210, 0.4) 0%, transparent 50%),
-        linear-gradient(135deg, #5072AE, #8AB8C9, #AED9C3);
-    background-size: 300% 300%, 300% 300%, 300% 300%, 100% 100%;
-    animation: bgMove 20s ease-in-out infinite alternate;
-} */
         .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 0 20px;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -79,20 +28,24 @@
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+
         th, td {
             padding: 14px 20px;
             text-align: left;
             border-bottom: 1px solid #edf2f7;
         }
+
         th {
             background: #2d3748;
             color: white;
             font-weight: 600;
             font-size: 1.1rem;
         }
+
         tr:hover {
             background: #f7fafc;
         }
+
         td a {
             color: #2d3748;
             text-decoration: none;
@@ -109,151 +62,173 @@
             font-weight: 600;
             color: #2d3748;
         }
+
         h1 {
             color: white;
             margin-bottom: 1.5rem;
             text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        .score_10 {
-            color: forestgreen;      /*rgb(34, 139, 34)*/
+
+        .section {
+            margin-top: 2.5rem;
         }
-        .score_9 {
-            color: #34d034;          /*rgb(52, 208, 52)*/
+        .section h2 {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            padding-bottom: 0.5rem;
         }
-        .score_8 {
-            color: #41f741;          /*rgb(65, 247, 65)*/
+
+        /* 分数颜色类（完全照搬） */
+        .score_10 { color: forestgreen; }
+        .score_9  { color: #34d034; }
+        .score_8  { color: #41f741; }
+        .score_7  { color: #52ff00; }
+        .score_6  { color: #a5ff00; }
+        .score_5  { color: #c8ff00; }
+        .score_4  { color: #ffd800; }
+        .score_3  { color: #ffa900; }
+        .score_2  { color: #ff6200; }
+        .score_1  { color: #ff4b00; }
+        .score_0  { color: red; }
+
+        /* 加载/错误信息样式 */
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            padding: 2rem 0;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
-        .score_7 {
-            color: #52ff00;          /*rgb(82, 255, 0)*/
-        }
-        .score_6 {
-            color: #a5ff00;          /*rgb(165, 255, 0)*/
-        }
-        .score_5 {
-            color: #c8ff00;          /*rgb(200, 255, 0)*/
-        }
-        .score_4 {
-            color: #ffd800;          /*rgb(255, 216, 0)*/
-        }
-        .score_3 {
-            color: #ffa900;          /*rgb(255, 169, 0)*/
-        }
-        .score_2 {
-            color: #ff6200;          /*rgb(255, 98, 0)*/
-        }
-        .score_1 {
-            color: #ff4b00;          /*rgb(255, 75, 0)*/
-        }
-        .score_0 {
-            color: red;              /*rgb(255, 0, 0)*/
-        }
-        .table-divider {
-            margin-top: 2em;
-            /* 相当于 mt-16 */
+        .error {
+            color: #fee2e2;
+            background: rgba(220, 38, 38, 0.3);
+            padding: 0.75rem;
+            border-radius: 6px;
+            text-align: center;
         }
     </style>
+
+    <!-- ===== 随机背景生成脚本（完全来自你的 IOI 页面） ===== -->
+    <script>
+        /**
+         * 生成完全随机的 HSL 颜色（带透明度可选）
+         * 色相 0~360，饱和度 40%~80%，明度 50%~80%
+         */
+        function randomHSL(alpha = 1) {
+            const h = Math.floor(Math.random() * 360);
+            const s = 40 + Math.floor(Math.random() * 41);  // 40~80
+            const l = 50 + Math.floor(Math.random() * 31);  // 50~80
+            if (alpha >= 1) return `hsl(${h}, ${s}%, ${l}%)`;
+            return `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
+        }
+
+        /**
+         * 生成完全随机的背景样式（三层叠加）
+         * - 两层径向光晕：位置、颜色、透明度均随机
+         * - 一层线性渐变：颜色数量 3~8 种，角度 0~360° 随机
+         */
+        function generateRandomBackground() {
+            const x1 = 10 + Math.random() * 80;
+            const y1 = 10 + Math.random() * 80;
+            const x2 = 10 + Math.random() * 80;
+            const y2 = 10 + Math.random() * 80;
+
+            const glow1 = randomHSL(0.20 + Math.random() * 0.15);
+            const glow2 = randomHSL(0.20 + Math.random() * 0.15);
+
+            const colorCount = 3 + Math.floor(Math.random() * 6);  // 3~8 种
+            const colors = [];
+            for (let i = 0; i < colorCount; i++) {
+                colors.push(randomHSL(1));
+            }
+            const angle = Math.floor(Math.random() * 360);
+
+            return `
+                radial-gradient(ellipse at ${x1}% ${y1}%, ${glow1} 0%, transparent 50%),
+                radial-gradient(ellipse at ${x2}% ${y2}%, ${glow2} 0%, transparent 50%),
+                linear-gradient(${angle}deg, ${colors.join(', ')})
+            `.trim();
+        }
+
+        // 页面加载时应用随机背景
+        document.addEventListener('DOMContentLoaded', function() {
+            const hero = document.querySelector('.hero');
+            if (hero) {
+                hero.style.background = generateRandomBackground();
+                // 背景尺寸：光晕层 100% 100%，渐变层 600% 600%（这样如果加动画可以漂移，但这里不加动画）
+                hero.style.backgroundSize = '100% 100%, 100% 100%, 600% 600%';
+                // 如果你希望背景有缓慢漂移动画，可以取消下面这行的注释：
+                // hero.style.animation = 'bgFlow 10s ease-in-out infinite alternate';
+                // 但为了保持和你原来 IOI 页面一致（它没有动画），我们不加。
+            }
+        });
+    </script>
+
+    <!-- ===== 加载子页面内容的脚本 ===== -->
+    <script>
+        /**
+         * 从指定 URL 抓取 HTML，提取 <body> 内的内容并插入到目标容器中。
+         */
+        function loadAndMerge(url, targetId) {
+            const target = document.getElementById(targetId);
+            if (!target) return;
+
+            target.innerHTML = '⏳ 正在加载…';
+            target.className = 'loading';
+
+            fetch(url, { cache: 'no-cache' })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.text();
+                })
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const bodyHTML = doc.body.innerHTML.trim();
+                    if (bodyHTML) {
+                        target.innerHTML = bodyHTML;
+                    } else {
+                        target.innerHTML = '📭 该赛场暂无数据';
+                    }
+                    target.className = '';
+                })
+                .catch(error => {
+                    target.innerHTML = `<span class="error">❌ 加载失败：${error.message}</span>`;
+                    target.className = 'error';
+                });
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 如果主页面在 https://huangxinyou.github.io/2026summer/
+            // 子页面为 /2026summer/ioi 和 /2026summer/noi
+            loadAndMerge('https://huangxinyou.github.io/2026summer/ioi', 'ioi-content');
+            loadAndMerge('https://huangxinyou.github.io/2026summer/noi', 'noi-content');
+        });
+    </script>
 </head>
 <body class="hero font-sans antialiased text-gray-800 py-10">
+
     <div class="container">
-        <h1 class="text-3xl font-bold">🏆 比赛（IOI）成绩表</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>📅 日期</th>
-                    <th>📊 分数</th>
-                    <th>🏅 排名</th>
-                    <th>📝 补题</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><a href="http://www.nflsoi.cc:20035/contest/2515" target="_blank">20260706</a></td>
-                    <td><span class="score_8">405/500</span></td>
-                    <td>6</td>
-                </tr>
-                <tr>
-                    <td><a href="http://www.nflsoi.cc:20035/contest/2516" target="_blank">20260708</a></td>
-                    <td><span class="score_5">200/400</span></td>
-                    <td>62</td>
-                </tr>
-                <tr>
-                    <td><a href="http://www.nflsoi.cc:20035/contest/2514" target="_blank">20260710</a></td>
-                    <td><span class="score_2">100/400</span></td>
-                    <td>154</td>
-                </tr>
-                <tr>
-                    <td><a href="http://www.nflsoi.cc:20035/contest/2508" target="_blank">20260711</a></td>
-                    <td><span class="score_5">230/400</span></td>
-                    <td>100</td>
-                </tr>
-                <tr>
-                    <td><a href="http://www.nflsoi.cc:20035/contest/2523" target="_blank">20260714</a></td>
-                    <td><span class="score_9">335/400</span></td>
-                    <td>3</td>
-                </tr>
-                <tr>
-                    <td><a href="http://www.nflsoi.cc:20035/contest/2527" target="_blank">20260716</a></td>
-                    <td><span class="score_8">310/400</span></td>
-                    <td>14</td>
-                </tr>
-                <tr>
-                    <td><a href="http://www.nflsoi.cc:20035/contest/2531" target="_blank">20260718</a></td>
-                    <td><span class="score_7">295/400</span></td>
-                    <td>19</td>
-                </tr>
-            </tbody>
-        </table>
+        <!-- 主标题 -->
+        <h1 class="text-3xl font-bold">🏆 2026summer</h1>
+
+        <!-- IOI 区域 -->
+        <div class="section">
+            <h2>IOI:</h2>
+            <div id="ioi-content" class="loading">⏳ 正在加载 IOI 数据…</div>
+        </div>
+
+        <!-- NOI 区域 -->
+        <div class="section">
+            <h2>NOI:</h2>
+            <div id="noi-content" class="loading">⏳ 正在加载 NOI 数据…</div>
+        </div>
     </div>
-          <div class="table-divider"></div>
-    <div class="container">
-        <h1 class="text-3xl font-bold">🏆 比赛（OI）成绩表</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>📅 日期</th>
-                    <th>📊 分数</th>
-                    <th>🏅 排名</th>
-                    <th>📝 补题</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><a href="http://www.nflsoi.cc:20035/contest/2539" target="_blank">20260721</a></td>
-                    <td><span class="score_7">285/400</span></td>
-                    <td>37</td>
-                </tr>
-                <tr>
-                    <td><a href="http://www.nflsoi.cc:20035/contest/2542" target="_blank">20260722</a></td>
-                    <td><span class="score_7">260/400</span></td>
-                    <td>27</td>
-                </tr>
-                <tr>
-                    <td><a href="http://www.nflsoi.cc:20035/contest/2537" target="_blank">20260724</a></td>
-                    <td><span class="">---/400</span></td>
-                    <td>---</td>
-                </tr>
-                <tr>
-                    <td><a href="http://www.nflsoi.cc:20035/contest/2538" target="_blank">20260725</a></td>
-                    <td><span class="">---/400</span></td>
-                    <td>---</td>
-                </tr>
-                <tr>
-                    <td><a href="http://www.nflsoi.cc:20035/contest/2547" target="_blank">20260728</a></td>
-                    <td><span class="score_7">290/400</span></td>
-                    <td>27</td>
-                </tr>
-                <tr>
-                    <td><a href="http://www.nflsoi.cc:20035/contest/2551" target="_blank">20260730</a></td>
-                    <td><span class="score_9">335/400</span></td>
-                    <td>13</td>
-                </tr>
-                <tr>
-                    <td><a href="http://www.nflsoi.cc:20035/contest/2554" target="_blank">20260801</a></td>
-                    <td><span class="score_7">255/400</span></td>
-                    <td>37</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+
 </body>
 </html>
