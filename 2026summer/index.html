@@ -110,13 +110,35 @@
             border-radius: 6px;
             text-align: center;
         }
-    </style>
+        .hero {
+            min-height: 100vh;
+            animation: bgFlow 10s ease-in-out infinite alternate;
+        }
 
-    <!-- ===== 随机背景生成脚本（完全来自你的 IOI 页面） ===== -->
-    <script>
+        /* 核心流动动画：让大渐变在背景中缓慢漂移 */
+        @keyframes bgFlow {
+            0% {
+                /* 径向光晕1固定，径向光晕2固定，线性渐变起始位置 */
+                background-position: 0% 0%, 0% 0%, 0% 0%;
+            }
+            25% {
+                background-position: 0% 0%, 0% 0%, 100% 0%;
+            }
+            50% {
+                background-position: 0% 0%, 0% 0%, 100% 100%;
+            }
+            75% {
+                background-position: 0% 0%, 0% 0%, 0% 100%;
+            }
+            100% {
+                background-position: 0% 0%, 0% 0%, 50% 50%;
+            }
+        }
+    </style>\
+          <script>
         /**
          * 生成完全随机的 HSL 颜色（带透明度可选）
-         * 色相 0~360，饱和度 40%~80%，明度 50%~80%
+         * 色相 0~360，饱和度 40%~80%，明度 50%~80%，色调柔和明亮
          */
         function randomHSL(alpha = 1) {
             const h = Math.floor(Math.random() * 360);
@@ -132,19 +154,24 @@
          * - 一层线性渐变：颜色数量 3~8 种，角度 0~360° 随机
          */
         function generateRandomBackground() {
+            // 光晕1：随机位置 (10%~90%)
             const x1 = 10 + Math.random() * 80;
             const y1 = 10 + Math.random() * 80;
+            // 光晕2
             const x2 = 10 + Math.random() * 80;
             const y2 = 10 + Math.random() * 80;
 
             const glow1 = randomHSL(0.20 + Math.random() * 0.15);
             const glow2 = randomHSL(0.20 + Math.random() * 0.15);
 
-            const colorCount = 3 + Math.floor(Math.random() * 6);  // 3~8 种
+            // 随机决定渐变颜色数量（3~8种）
+            const colorCount = 10 + Math.floor(Math.random() * 6);
             const colors = [];
             for (let i = 0; i < colorCount; i++) {
                 colors.push(randomHSL(1));
             }
+
+            // 随机渐变角度（0~360度）
             const angle = Math.floor(Math.random() * 360);
 
             return `
@@ -159,11 +186,9 @@
             const hero = document.querySelector('.hero');
             if (hero) {
                 hero.style.background = generateRandomBackground();
-                // 背景尺寸：光晕层 100% 100%，渐变层 600% 600%（这样如果加动画可以漂移，但这里不加动画）
+                // 固定背景尺寸，与动画兼容（光晕层 100% 100%，渐变层 600% 600% 用于漂移）
                 hero.style.backgroundSize = '100% 100%, 100% 100%, 600% 600%';
-                // 如果你希望背景有缓慢漂移动画，可以取消下面这行的注释：
-                // hero.style.animation = 'bgFlow 10s ease-in-out infinite alternate';
-                // 但为了保持和你原来 IOI 页面一致（它没有动画），我们不加。
+                // 注意：background-position 由动画控制，无需设置
             }
         });
     </script>
