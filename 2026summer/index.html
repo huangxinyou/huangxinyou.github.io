@@ -230,9 +230,9 @@
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', function() {
             // 如果主页面在 https://huangxinyou.github.io/2026summer/
-            // 子页面为 /2026summer/ioi 和 /2026summer/noi
             loadAndMerge('https://huangxinyou.github.io/2026summer/ioi', 'ioi-content');
             loadAndMerge('https://huangxinyou.github.io/2026summer/noi', 'noi-content');
+            loadAndMerge('https://huangxinyou.github.io/2026summer/acm', 'acm-content');
         });
     </script>
 </head>
@@ -252,6 +252,11 @@
         <div class="section">
             <h2>NOI:</h2>
             <div id="noi-content" class="loading">⏳ 正在加载 NOI 数据…</div>
+        </div>
+        <!-- ACM 区域 -->
+        <div class="section">
+            <h2>ACM:</h2>
+            <div id="acm-content" class="loading">⏳ 正在加载 ACM 数据…</div>
         </div>
     </div>
 
