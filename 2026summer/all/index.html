@@ -53,6 +53,8 @@
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            table-layout: auto;
+            font-size: 0.8rem
         }
         th, td {
             padding: 14px 20px;
@@ -83,9 +85,6 @@
         td:last-child {
             font-weight: 600;
             color: #2d3748;
-        }
-        td:first-child, th:first-child {
-            white-space: nowrap;
         }
         h1 {
             color: white;
@@ -187,7 +186,6 @@
 <body class="hero font-sans antialiased text-gray-800 py-10">
     <div class="container">
         <h1 class="text-3xl font-bold">🏆 专题（ACM）成绩表</h1>
-        <div class="table-wrapper" style="overflow-x: auto;">
         <table>
             <thead>
                 <tr>
@@ -446,7 +444,6 @@
                 </tr>
             </tbody>
         </table>
-        </div>
     </div>
 </body>
 </html>
