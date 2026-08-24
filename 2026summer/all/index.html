@@ -84,6 +84,9 @@
             font-weight: 600;
             color: #2d3748;
         }
+        td:first-child, th:first-child {
+            white-space: nowrap;
+        }
         h1 {
             color: white;
             margin-bottom: 1.5rem;
@@ -184,6 +187,7 @@
 <body class="hero font-sans antialiased text-gray-800 py-10">
     <div class="container">
         <h1 class="text-3xl font-bold">🏆 专题（ACM）成绩表</h1>
+        <div class="table-wrapper" style="overflow-x: auto;">
         <table>
             <thead>
                 <tr>
@@ -442,6 +446,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 </body>
 </html>
