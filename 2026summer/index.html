@@ -3,229 +3,299 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 Summer 汇总</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-            background: #fafafa;
+    <title>比赛成绩表</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .hero {
+        min-height: 100vh;
+        animation: bgFlow 10s ease-in-out infinite alternate;
+    }
+
+    /* 核心流动动画：让大渐变在背景中缓慢漂移 */
+    @keyframes bgFlow {
+        0% {
+            background-position: 0% 0%, 0% 0%, 0% 0%;
         }
-        h1 {
-            font-size: 1.8rem;
-            border-bottom: 2px solid #333;
-            padding-bottom: 0.3rem;
+        25% {
+            background-position: 0% 0%, 0% 0%, 100% 0%;
         }
-        .entry {
-            display: flex;
-            align-items: baseline;
-            padding: 0.6rem 0;
-            border-bottom: 1px solid #eaeaea;
+        50% {
+            background-position: 0% 0%, 0% 0%, 100% 100%;
         }
-        .entry .date {
-            min-width: 100px;
-            color: #555;
-            font-size: 0.9rem;
+        75% {
+            background-position: 0% 0%, 0% 0%, 0% 100%;
         }
-        .entry .title {
-            flex: 1;
-            margin: 0 1rem;
-            text-decoration: none;
-            color: #0366d6;
+        100% {
+            background-position: 0% 0%, 0% 0%, 50% 50%;
         }
-        .entry .title:hover {
-            text-decoration: underline;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 20px;
+        font-weight: bold;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        table-layout: auto;
+        font-size: 0.8rem
+    }
+    th, td {
+        padding: 14px 20px;
+        text-align: left;
+        border-bottom: 1px solid #edf2f7;
+    }
+    th {
+        background: #2d3748;
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    tr:hover {
+        background: #f7fafc;
+    }
+    td a {
+        color: #2d3748;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    td a:hover {
+        text-decoration: underline;
+        color: #1a202c;
+    }
+    td span {
+        font-weight: 600;
+    }
+    td:last-child {
+        font-weight: 600;
+        color: #2d3748;
+    }
+    h1 {
+        color: white;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .score_10 { color: forestgreen; }
+    .score_9  { color: #34d034; }
+    .score_8  { color: #41f741; }
+    .score_7  { color: #52ff00; }
+    .score_6  { color: #a5ff00; }
+    .score_5  { color: #c8ff00; }
+    .score_4  { color: #ffd800; }
+    .score_3  { color: #ffa900; }
+    .score_2  { color: #ff6200; }
+    .score_1  { color: #ff4b00; }
+    .score_0  { color: red; }
+
+    /* 加载状态提示 */
+    #loading-msg {
+        text-align: center;
+        padding: 2rem 0;
+        color: white;
+        font-size: 1.2rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+</style>
+<script>
+    /**
+     * 生成完全随机的 HSL 颜色（带透明度可选）
+     */
+    function randomHSL(alpha = 1) {
+        const h = Math.floor(Math.random() * 360);
+        const s = 40 + Math.floor(Math.random() * 41);
+        const l = 50 + Math.floor(Math.random() * 31);
+        if (alpha >= 1) return `hsl(${h}, ${s}%, ${l}%)`;
+        return `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
+    }
+
+    /**
+     * 生成完全随机的背景样式（三层叠加）
+     */
+    function generateRandomBackground() {
+        const x1 = 10 + Math.random() * 80;
+        const y1 = 10 + Math.random() * 80;
+        const x2 = 10 + Math.random() * 80;
+        const y2 = 10 + Math.random() * 80;
+        const glow1 = randomHSL(0.20 + Math.random() * 0.15);
+        const glow2 = randomHSL(0.20 + Math.random() * 0.15);
+        var colorCount = 10 + Math.floor(Math.random() * 6);
+        const colors = [];
+        for (var i = 0; i < colorCount; i++) {
+            colors.push(randomHSL(1));
         }
-        .entry .source {
-            color: #888;
-            font-size: 0.8rem;
-            background: #f0f0f0;
-            padding: 0.1rem 0.5rem;
-            border-radius: 12px;
+        const angle = Math.floor(Math.random() * 360);
+        return `
+            radial-gradient(ellipse at ${x1}% ${y1}%, ${glow1} 0%, transparent 50%),
+            radial-gradient(ellipse at ${x2}% ${y2}%, ${glow2} 0%, transparent 50%),
+            linear-gradient(${angle}deg, ${colors.join(', ')})
+        `.trim();
+    }
+
+    // 页面加载时应用随机背景
+    document.addEventListener('DOMContentLoaded', function() {
+        const hero = document.querySelector('.hero');
+        if (hero) {
+            hero.style.background = generateRandomBackground();
+            hero.style.backgroundSize = '100% 100%, 100% 100%, 600% 600%';
         }
-        .loading {
-            text-align: center;
-            color: #666;
-            padding: 3rem 0;
-        }
-        .error {
-            color: #d73a49;
-            background: #ffeef0;
-            padding: 1rem;
-            border-radius: 6px;
-            text-align: center;
-        }
-        .debug {
-            margin-top: 20px;
-            padding: 10px;
-            background: #f6f8fa;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            color: #333;
-            display: none;
-        }
-    </style>
+    });
+</script>
 </head>
-<body>
-    <h1>📅 2026 Summer 汇总</h1>
-    <div id="container">
-        <div class="loading" id="loading">正在加载数据...</div>
-        <div id="entries"></div>
-        <div id="debug" class="debug"></div>
+<body class="hero font-sans antialiased text-gray-800 py-10">
+    <div class="container">
+        <h1 class="text-3xl font-bold">🏆 2026暑假成绩表</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>📅 算法（日期）/日期</th>
+                    <th>📊 题数</th>
+                    <th>🏅 排名</th>
+                    <th>📝 补题</th>
+                    <th>🏷️ 类型</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <tr id="loading-row"><td colspan="5" style="text-align:center; padding:2rem; color:#666;">⏳ 加载数据中…</td></tr>
+            </tbody>
+        </table>
     </div>
 
     <script>
         (function() {
-            // 三个子页面（同目录下）
-            const SOURCES = ['ioi', 'noi', 'acm'];
+            // ---------- 配置 ----------
+            const SOURCES = [
+                { url: 'ioi', label: 'IOI' },
+                { url: 'noi', label: 'NOI' },
+                { url: 'acm', label: 'ACM' }
+            ];
 
-            // 从文本中提取 8 位连续数字（YYYYMMDD）
-            function extractDateFromText(text) {
-                const match = text.match(/\b(\d{8})\b/);
-                return match ? match[1] : null;
+            // ---------- 工具函数 ----------
+            // 提取8位数字日期 (YYYYMMDD)
+            function extractDate(text) {
+                const m = text.match(/\b(\d{8})\b/);
+                return m ? m[1] : null;
             }
 
-            // 解析日期字符串为 Date 对象
-            function parseDateStr(dateStr) {
-                if (!dateStr) return null;
-                const year = parseInt(dateStr.substring(0, 4), 10);
-                const month = parseInt(dateStr.substring(4, 6), 10) - 1;
-                const day = parseInt(dateStr.substring(6, 8), 10);
+            function parseDateStr(str) {
+                if (!str) return null;
+                const year = parseInt(str.substring(0,4), 10);
+                const month = parseInt(str.substring(4,6), 10) - 1;
+                const day = parseInt(str.substring(6,8), 10);
                 if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
                     return new Date(year, month, day);
                 }
                 return null;
             }
 
-            // 获取页面标题（用于显示）
-            function getTitleFromFirstCell(cellText) {
-                // 如果包含括号且括号内是日期，则提取括号前的内容作为标题
-                const match = cellText.match(/^(.*?)\s*[（(]\d{8}[)）]/);
-                if (match) {
-                    return match[1].trim();
-                }
-                // 否则直接返回整个文本（但去除日期数字）
-                return cellText.replace(/\d{8}/g, '').trim() || cellText.trim();
-            }
-
-            // 解析单个页面
+            // 从URL获取页面HTML
             async function fetchPage(url) {
                 const resp = await fetch(url);
                 if (!resp.ok) throw new Error(`HTTP ${resp.status} – ${url}`);
-                const html = await resp.text();
+                return await resp.text();
+            }
+
+            // 解析单个页面，返回条目数组
+            function parsePage(html, sourceLabel) {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
+                const rows = doc.querySelectorAll('table tbody tr, table tr');
                 const entries = [];
 
-                // 查找所有表格行（跳过表头）
-                const rows = doc.querySelectorAll('table tbody tr, table tr');
                 for (const row of rows) {
                     const cells = row.querySelectorAll('td');
-                    if (cells.length < 2) continue;
+                    if (cells.length < 4) continue; // 至少要有4列
 
-                    const firstCellText = cells[0].textContent.trim();
-                    // 提取日期
-                    const dateStr = extractDateFromText(firstCellText);
+                    // 第一列内容（含链接、文本）
+                    const col1 = cells[0];
+                    const col1Text = col1.textContent.trim();
+                    const dateStr = extractDate(col1Text);
                     if (!dateStr) continue; // 没有日期则跳过
 
                     const dateObj = parseDateStr(dateStr);
-                    // 标题：取第一列内容，但去除日期部分，保留有意义的部分
-                    let title = getTitleFromFirstCell(firstCellText);
-                    // 如果标题为空，则用来源+日期
-                    if (!title) title = `${extractSource(url)} ${dateStr}`;
 
-                    // 尝试从第一列的链接获取 href，如果没有则设为 '#'
-                    const linkEl = cells[0].querySelector('a');
-                    const link = linkEl ? linkEl.getAttribute('href') : '#';
+                    // 保留各列的 innerHTML（保留样式和链接）
+                    const col1HTML = col1.innerHTML.trim();
+                    const col2HTML = cells[1].innerHTML.trim();
+                    const col3HTML = cells[2].innerHTML.trim();
+                    const col4HTML = cells[3].innerHTML.trim();
 
                     entries.push({
-                        date: dateObj,
-                        dateDisplay: dateStr,
-                        title: title,
-                        link: link,
-                        source: extractSource(url)
+                        dateObj: dateObj,
+                        dateStr: dateStr,
+                        col1: col1HTML,
+                        col2: col2HTML,
+                        col3: col3HTML,
+                        col4: col4HTML,
+                        source: sourceLabel
                     });
                 }
-
                 return entries;
             }
 
-            function extractSource(url) {
-                const parts = url.split('/');
-                return parts[parts.length - 1] || '未知';
-            }
-
-            // 渲染排序后的条目
-            function render(entries, debugInfo) {
-                const container = document.getElementById('entries');
-                const loading = document.getElementById('loading');
-                const debugDiv = document.getElementById('debug');
-
-                if (debugInfo) {
-                    debugDiv.style.display = 'block';
-                    debugDiv.textContent = debugInfo;
-                }
-
-                if (!entries || entries.length === 0) {
-                    container.innerHTML = '<div class="error">没有找到任何条目，请检查页面结构或查看调试信息</div>';
-                    loading.style.display = 'none';
-                    return;
-                }
-
-                // 按日期降序（最新在前）
-                entries.sort((a, b) => {
-                    if (a.date && b.date) return b.date - a.date;
-                    if (a.date) return -1;
-                    if (b.date) return 1;
-                    return 0;
-                });
-
-                let html = '';
-                for (const item of entries) {
-                    const dateText = item.dateDisplay || '无日期';
-                    // 如果链接是相对路径，加上 ./ 前缀
-                    let link = item.link;
-                    if (link && !link.startsWith('http') && !link.startsWith('#')) {
-                        link = './' + link;
-                    }
-                    html += `
-                        <div class="entry">
-                            <span class="date">${dateText}</span>
-                            <a href="${link || '#'}" class="title" target="_blank">${item.title}</a>
-                            <span class="source">${item.source}</span>
-                        </div>
-                    `;
-                }
-                container.innerHTML = html;
-                loading.style.display = 'none';
-            }
-
+            // ---------- 主流程 ----------
             async function loadAll() {
-                const loading = document.getElementById('loading');
-                const debugDiv = document.getElementById('debug');
-                const debugMessages = [];
-
+                const tbody = document.getElementById('table-body');
                 try {
-                    const results = await Promise.all(SOURCES.map(async (url) => {
-                        try {
-                            const entries = await fetchPage(url);
-                            debugMessages.push(`${url}: 解析到 ${entries.length} 条`);
-                            return entries;
-                        } catch (err) {
-                            debugMessages.push(`${url}: 错误 - ${err.message}`);
-                            return [];
-                        }
-                    }));
+                    // 并行请求三个页面
+                    const results = await Promise.all(
+                        SOURCES.map(async (s) => {
+                            try {
+                                const html = await fetchPage(s.url);
+                                const entries = parsePage(html, s.label);
+                                return entries;
+                            } catch (err) {
+                                console.warn(`加载 ${s.url} 失败:`, err);
+                                return [];
+                            }
+                        })
+                    );
 
-                    const allEntries = results.flat();
-                    render(allEntries, debugMessages.join('； '));
+                    // 合并所有条目
+                    let allEntries = [];
+                    results.forEach(entries => allEntries = allEntries.concat(entries));
+
+                    // 按日期降序排序（最新在前）
+                    allEntries.sort((a, b) => {
+                        if (a.dateObj && b.dateObj) return b.dateObj - a.dateObj;
+                        if (a.dateObj) return -1;
+                        if (b.dateObj) return 1;
+                        return 0;
+                    });
+
+                    // 生成表格行 HTML
+                    let rowsHTML = '';
+                    if (allEntries.length === 0) {
+                        rowsHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:#666;">没有找到任何记录</td></tr>`;
+                    } else {
+                        for (const item of allEntries) {
+                            rowsHTML += `
+                                <tr>
+                                    <td>${item.col1}</td>
+                                    <td>${item.col2}</td>
+                                    <td>${item.col3}</td>
+                                    <td>${item.col4}</td>
+                                    <td>${item.source}</td>
+                                </tr>
+                            `;
+                        }
+                    }
+
+                    tbody.innerHTML = rowsHTML;
+
                 } catch (err) {
-                    loading.innerHTML = `<div class="error">❌ 加载失败：${err.message}</div>`;
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:red;">❌ 加载失败：${err.message}</td></tr>`;
                     console.error(err);
                 }
             }
 
+            // 执行
             loadAll();
         })();
     </script>
