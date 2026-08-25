@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 Summer 汇总</title>
     <style>
-        /* 你可以替换成你喜欢的样式，保持与原来 all 页面一致即可 */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             max-width: 900px;
@@ -57,6 +56,15 @@
             border-radius: 6px;
             text-align: center;
         }
+        .debug {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f6f8fa;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #333;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -64,24 +72,44 @@
     <div id="container">
         <div class="loading" id="loading">正在加载数据...</div>
         <div id="entries"></div>
+        <div id="debug" class="debug"></div>
     </div>
 
     <script>
         (function() {
-            // ---------- 配置区域 ----------
-            // 三个子页面的相对路径（与 index.html 在同一目录下）
-            const SOURCES = [
-                'ioi',
-                'noi',
-                'acm'
-            ];
+            // 三个子页面（同目录下）
+            const SOURCES = ['ioi', 'noi', 'acm'];
 
-            // 选择器：根据实际页面结构调整
-            const ITEM_SELECTOR = '.entry, li, .item, .post';
-            const DATE_SELECTOR = '.date, .time, [datetime], .post-date';
-            const TITLE_SELECTOR = 'a, .title, .post-title';
+            // 从文本中提取 8 位连续数字（YYYYMMDD）
+            function extractDateFromText(text) {
+                const match = text.match(/\b(\d{8})\b/);
+                return match ? match[1] : null;
+            }
 
-            // ---------- 核心逻辑 ----------
+            // 解析日期字符串为 Date 对象
+            function parseDateStr(dateStr) {
+                if (!dateStr) return null;
+                const year = parseInt(dateStr.substring(0, 4), 10);
+                const month = parseInt(dateStr.substring(4, 6), 10) - 1;
+                const day = parseInt(dateStr.substring(6, 8), 10);
+                if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+                    return new Date(year, month, day);
+                }
+                return null;
+            }
+
+            // 获取页面标题（用于显示）
+            function getTitleFromFirstCell(cellText) {
+                // 如果包含括号且括号内是日期，则提取括号前的内容作为标题
+                const match = cellText.match(/^(.*?)\s*[（(]\d{8}[)）]/);
+                if (match) {
+                    return match[1].trim();
+                }
+                // 否则直接返回整个文本（但去除日期数字）
+                return cellText.replace(/\d{8}/g, '').trim() || cellText.trim();
+            }
+
+            // 解析单个页面
             async function fetchPage(url) {
                 const resp = await fetch(url);
                 if (!resp.ok) throw new Error(`HTTP ${resp.status} – ${url}`);
@@ -90,21 +118,26 @@
                 const doc = parser.parseFromString(html, 'text/html');
                 const entries = [];
 
-                const items = doc.querySelectorAll(ITEM_SELECTOR);
-                for (const item of items) {
-                    const dateEl = item.querySelector(DATE_SELECTOR);
-                    const titleEl = item.querySelector(TITLE_SELECTOR);
-                    if (!dateEl || !titleEl) continue;
+                // 查找所有表格行（跳过表头）
+                const rows = doc.querySelectorAll('table tbody tr, table tr');
+                for (const row of rows) {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length < 2) continue;
 
-                    let dateStr = dateEl.textContent.trim();
-                    if (dateEl.hasAttribute('datetime')) {
-                        dateStr = dateEl.getAttribute('datetime') || dateStr;
-                    }
-                    let dateObj = parseDate(dateStr);
-                    if (!dateObj) dateObj = null;
+                    const firstCellText = cells[0].textContent.trim();
+                    // 提取日期
+                    const dateStr = extractDateFromText(firstCellText);
+                    if (!dateStr) continue; // 没有日期则跳过
 
-                    const title = titleEl.textContent.trim();
-                    const link = titleEl.getAttribute('href') || '#';
+                    const dateObj = parseDateStr(dateStr);
+                    // 标题：取第一列内容，但去除日期部分，保留有意义的部分
+                    let title = getTitleFromFirstCell(firstCellText);
+                    // 如果标题为空，则用来源+日期
+                    if (!title) title = `${extractSource(url)} ${dateStr}`;
+
+                    // 尝试从第一列的链接获取 href，如果没有则设为 '#'
+                    const linkEl = cells[0].querySelector('a');
+                    const link = linkEl ? linkEl.getAttribute('href') : '#';
 
                     entries.push({
                         date: dateObj,
@@ -114,21 +147,8 @@
                         source: extractSource(url)
                     });
                 }
-                return entries;
-            }
 
-            function parseDate(str) {
-                if (!str) return null;
-                str = str.trim();
-                let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-                if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
-                m = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-                if (m) return new Date(+m[3], +m[1] - 1, +m[2]);
-                const date = new Date(str);
-                if (!isNaN(date)) return date;
-                m = str.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/);
-                if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
-                return null;
+                return entries;
             }
 
             function extractSource(url) {
@@ -136,15 +156,24 @@
                 return parts[parts.length - 1] || '未知';
             }
 
-            function render(entries) {
+            // 渲染排序后的条目
+            function render(entries, debugInfo) {
                 const container = document.getElementById('entries');
                 const loading = document.getElementById('loading');
+                const debugDiv = document.getElementById('debug');
+
+                if (debugInfo) {
+                    debugDiv.style.display = 'block';
+                    debugDiv.textContent = debugInfo;
+                }
+
                 if (!entries || entries.length === 0) {
-                    container.innerHTML = '<div class="error">没有找到任何条目</div>';
+                    container.innerHTML = '<div class="error">没有找到任何条目，请检查页面结构或查看调试信息</div>';
                     loading.style.display = 'none';
                     return;
                 }
 
+                // 按日期降序（最新在前）
                 entries.sort((a, b) => {
                     if (a.date && b.date) return b.date - a.date;
                     if (a.date) return -1;
@@ -155,12 +184,15 @@
                 let html = '';
                 for (const item of entries) {
                     const dateText = item.dateDisplay || '无日期';
-                    // 如果链接是相对路径，保留原样；如果是绝对路径则直接使用
-                    const link = item.link.startsWith('http') ? item.link : (item.link.startsWith('/') ? item.link : `./${item.link}`);
+                    // 如果链接是相对路径，加上 ./ 前缀
+                    let link = item.link;
+                    if (link && !link.startsWith('http') && !link.startsWith('#')) {
+                        link = './' + link;
+                    }
                     html += `
                         <div class="entry">
                             <span class="date">${dateText}</span>
-                            <a href="${link}" class="title" target="_blank">${item.title}</a>
+                            <a href="${link || '#'}" class="title" target="_blank">${item.title}</a>
                             <span class="source">${item.source}</span>
                         </div>
                     `;
@@ -171,10 +203,23 @@
 
             async function loadAll() {
                 const loading = document.getElementById('loading');
+                const debugDiv = document.getElementById('debug');
+                const debugMessages = [];
+
                 try {
-                    const results = await Promise.all(SOURCES.map(url => fetchPage(url)));
+                    const results = await Promise.all(SOURCES.map(async (url) => {
+                        try {
+                            const entries = await fetchPage(url);
+                            debugMessages.push(`${url}: 解析到 ${entries.length} 条`);
+                            return entries;
+                        } catch (err) {
+                            debugMessages.push(`${url}: 错误 - ${err.message}`);
+                            return [];
+                        }
+                    }));
+
                     const allEntries = results.flat();
-                    render(allEntries);
+                    render(allEntries, debugMessages.join('； '));
                 } catch (err) {
                     loading.innerHTML = `<div class="error">❌ 加载失败：${err.message}</div>`;
                     console.error(err);
