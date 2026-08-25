@@ -3,447 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>比赛成绩表</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<style>
-            .hero {
-            min-height: 100vh;
-            animation: bgFlow 10s ease-in-out infinite alternate;
-        } 
-
-        /* 核心流动动画：让大渐变在背景中缓慢漂移 */
-        @keyframes bgFlow {
-            0% {
-                /* 径向光晕1固定，径向光晕2固定，线性渐变起始位置 */
-                background-position: 0% 0%, 0% 0%, 0% 0%;
-            }
-            25% {
-                background-position: 0% 0%, 0% 0%, 100% 0%;
-            }
-            50% {
-                background-position: 0% 0%, 0% 0%, 100% 100%;
-            }
-            75% {
-                background-position: 0% 0%, 0% 0%, 0% 100%;
-            }
-            100% {
-                background-position: 0% 0%, 0% 0%, 50% 50%;
-            }
-        }
-      /* .hero {
-    background: 
-        radial-gradient(circle at 30% 40%, rgba(120, 180, 230, 0.6) 0%, transparent 60%),
-        radial-gradient(circle at 70% 60%, rgba(200, 230, 210, 0.6) 0%, transparent 60%),
-        radial-gradient(circle at 50% 80%, rgba(180, 140, 210, 0.4) 0%, transparent 50%),
-        linear-gradient(135deg, #5072AE, #8AB8C9, #AED9C3);
-    background-size: 300% 300%, 300% 300%, 300% 300%, 100% 100%;
-    animation: bgMove 20s ease-in-out infinite alternate;
-} */
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 20px;
-            font-weight: bold;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            table-layout: auto;
-            font-size: 0.8rem
-        }
-        th, td {
-            padding: 14px 20px;
-            text-align: left;
-            border-bottom: 1px solid #edf2f7;
-        }
-        th {
-            background: #2d3748;
-            color: white;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-        tr:hover {
-            background: #f7fafc;
-        }
-        td a {
-            color: #2d3748;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        td a:hover {
-            text-decoration: underline;
-            color: #1a202c;
-        }
-        td span {
-            font-weight: 600;
-        }
-        td:last-child {
-            font-weight: 600;
-            color: #2d3748;
+    <title>2026 Summer 汇总</title>
+    <style>
+        /* 你可以替换成你原有 all.html 的样式 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            background: #fafafa;
         }
         h1 {
-            color: white;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            font-size: 1.8rem;
+            border-bottom: 2px solid #333;
+            padding-bottom: 0.3rem;
         }
-        .score_10 {
-            color: forestgreen;      /*rgb(34, 139, 34)*/
+        .entry {
+            display: flex;
+            align-items: baseline;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #eaeaea;
         }
-        .score_9 {
-            color: #34d034;          /*rgb(52, 208, 52)*/
+        .entry .date {
+            min-width: 100px;
+            color: #555;
+            font-size: 0.9rem;
         }
-        .score_8 {
-            color: #41f741;          /*rgb(65, 247, 65)*/
+        .entry .title {
+            flex: 1;
+            margin: 0 1rem;
+            text-decoration: none;
+            color: #0366d6;
         }
-        .score_7 {
-            color: #52ff00;          /*rgb(82, 255, 0)*/
+        .entry .title:hover {
+            text-decoration: underline;
         }
-        .score_6 {
-            color: #a5ff00;          /*rgb(165, 255, 0)*/
+        .entry .source {
+            color: #888;
+            font-size: 0.8rem;
+            background: #f0f0f0;
+            padding: 0.1rem 0.5rem;
+            border-radius: 12px;
         }
-        .score_5 {
-            color: #c8ff00;          /*rgb(200, 255, 0)*/
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 3rem 0;
         }
-        .score_4 {
-            color: #ffd800;          /*rgb(255, 216, 0)*/
-        }
-        .score_3 {
-            color: #ffa900;          /*rgb(255, 169, 0)*/
-        }
-        .score_2 {
-            color: #ff6200;          /*rgb(255, 98, 0)*/
-        }
-        .score_1 {
-            color: #ff4b00;          /*rgb(255, 75, 0)*/
-        }
-        .score_0 {
-            color: red;              /*rgb(255, 0, 0)*/
+        .error {
+            color: #d73a49;
+            background: #ffeef0;
+            padding: 1rem;
+            border-radius: 6px;
+            text-align: center;
         }
     </style>
-          <script>
-        /**
-         * 生成完全随机的 HSL 颜色（带透明度可选）
-         * 色相 0~360，饱和度 40%~80%，明度 50%~80%，色调柔和明亮
-         */
-        function randomHSL(alpha = 1) {
-            const h = Math.floor(Math.random() * 360);
-            const s = 40 + Math.floor(Math.random() * 41);  // 40~80
-            const l = 50 + Math.floor(Math.random() * 31);  // 50~80
-            if (alpha >= 1) return `hsl(${h}, ${s}%, ${l}%)`;
-            return `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
-        }
-
-        /**
-         * 生成完全随机的背景样式（三层叠加）
-         * - 两层径向光晕：位置、颜色、透明度均随机
-         * - 一层线性渐变：颜色数量 3~8 种，角度 0~360° 随机
-         */
-        function generateRandomBackground() {
-            // 光晕1：随机位置 (10%~90%)
-            const x1 = 10 + Math.random() * 80;
-            const y1 = 10 + Math.random() * 80;
-            // 光晕2
-            const x2 = 10 + Math.random() * 80;
-            const y2 = 10 + Math.random() * 80;
-
-            const glow1 = randomHSL(0.20 + Math.random() * 0.15);
-            const glow2 = randomHSL(0.20 + Math.random() * 0.15);
-
-            // 随机决定渐变颜色数量（3~8种）
-            var colorCount = 10 + Math.floor(Math.random() * 6);
-            const colors = [];
-            for (var i = 0; i < colorCount; i++) {
-                colors.push(randomHSL(1));
-            }
-
-            // 随机渐变角度（0~360度）
-            const angle = Math.floor(Math.random() * 360);
-
-            return `
-                radial-gradient(ellipse at ${x1}% ${y1}%, ${glow1} 0%, transparent 50%),
-                radial-gradient(ellipse at ${x2}% ${y2}%, ${glow2} 0%, transparent 50%),
-                linear-gradient(${angle}deg, ${colors.join(', ')})
-            `.trim();
-        }
-
-        // 页面加载时应用随机背景
-        document.addEventListener('DOMContentLoaded', function() {
-            const hero = document.querySelector('.hero');
-            if (hero) {
-                hero.style.background = generateRandomBackground();
-                // 固定背景尺寸，与动画兼容（光晕层 100% 100%，渐变层 600% 600% 用于漂移）
-                hero.style.backgroundSize = '100% 100%, 100% 100%, 600% 600%';
-                // 注意：background-position 由动画控制，无需设置
-            }
-        });
-    </script>
 </head>
-<body class="hero font-sans antialiased text-gray-800 py-10">
-    <div class="container">
-        <h1 class="text-3xl font-bold">🏆 2026暑假成绩表</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>📅 算法（日期）/日期</th>
-                    <th>📊 题数</th>
-                    <th>🏅 排名</th>
-                    <th>📝 补题</th>
-                    <th>🏷️ 类型</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2515" target="_blank">20260706</a></td>
-                    <td><span class="score_8">405/500</span></td>
-                    <td>5</td>
-                    <td><span class="score_10">500/500</span></td>
-                    <td>IOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2511" target="_blank">基础数据结构（20260707）</a></td>
-                    <td><span class="score_10">11/11</span></td>
-                    <td>5</td>
-                    <td><span class="score_10">11/11</span></td>
-                    <td>ACM</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2516" target="_blank">20260708</a></td>
-                    <td><span class="score_5">200/400</span></td>
-                    <td>61</td>
-                    <td><span class="score_6">255/400</span></td>
-                    <td>IOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2513" target="_blank">DP1（多维DP,背包DP,数位DP）（20260709）</a></td>
-                    <td><span class="score_7">8/11</span></td>
-                    <td>34</td>
-                    <td><span class="score_10">11/11</span></td>
-                    <td>ACM</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2514" target="_blank">20260710</a></td>
-                    <td><span class="score_2">100/400</span></td>
-                    <td>150</td>
-                    <td><span class="score_7">300/400</span></td>
-                    <td>IOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2508" target="_blank">20260711</a></td>
-                    <td><span class="score_5">230/400</span></td>
-                    <td>89</td>
-                    <td><span class="score_7">300/400</span></td>
-                    <td>IOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2522" target="_blank">DP2（状压DP，树形DP，区间DP）（20260713）</a></td>
-                    <td><span class="score_7">8/11</span></td>
-                    <td>43</td>
-                    <td><span class="score_7">8/11</span></td>
-                    <td>ACM</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2523" target="_blank">20260714</a></td>
-                    <td><span class="score_9">330/400</span></td>
-                    <td>2</td>
-                    <td><span class="score_8">335/400</span></td>
-                    <td>IOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2524" target="_blank">期望概率DP（20260715）</a></td>
-                    <td><span class="score_5">6/11</span></td>
-                    <td>52</td>
-                    <td><span class="score_6">6/11</span></td>
-                    <td>ACM</td>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2527" target="_blank">20260716</a></td>
-                    <td><span class="score_8">310/400</span></td>
-                    <td>14</td>
-                    <td><span class="score_7">310/400</span></td>
-                    <td>IOI</td>
-                </tr>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2530" target="_blank">DP优化（20260717）</a></td>
-                    <td><span class="score_7">8/11</span></td>
-                    <td>18</td>
-                    <td><span class="score_8">9/11</span></td>
-                    <td>ACM</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2531" target="_blank">20260718</a></td>
-                    <td><span class="score_7">295/400</span></td>
-                    <td>19</td>
-                    <td><span class="score_7">295/400</span></td>
-                    <td>IOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2535" target="_blank">贪心综合（20260720）</a></td>
-                    <td><span class="score_7">8/11</span></td>
-                    <td>12</td>
-                    <td><span class="score_7">8/11</span></td>
-                    <td>ACM</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2539" target="_blank">20260721</a></td>
-                    <td><span class="score_7">285/400</span></td>
-                    <td>37</td>
-                    <td><span class="score_7">285/400</span></td>
-                    <td>NOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2542" target="_blank">20260722</a></td>
-                    <td><span class="score_7">260/400</span></td>
-                    <td>27</td>
-                    <td><span class="score_6">260/400</span></td>
-                    <td>NOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2536" target="_blank">树上专题（20260723）</a></td>
-                    <td><span class="">---/10</span></td>
-                    <td>---</td>
-                    <td><span class="">---/10</span></td>
-                    <td>ACM</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2537" target="_blank">20260724</a></td>
-                    <td><span class="">---/400</span></td>
-                    <td>---</td>
-                    <td>---/400</td>
-                    <td>NOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2538" target="_blank">20260725</a></td>
-                    <td><span class="">---/400</span></td>
-                    <td>---</td>
-                    <td>---/400</td>
-                    <td>NOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2546" target="_blank">莫队与扫描线（20260727）</a></td>
-                    <td><span class="score_4">5/11</span></td>
-                    <td>61</td>
-                    <td><span class="score_4">5/11</span></td>
-                    <td>ACM</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2547" target="_blank">20260728</a></td>
-                    <td><span class="score_7">290/400</span></td>
-                    <td>27</td>
-                    <td><span class="score_7">290/400</span></td>
-                    <td>NOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2550" target="_blank">哈希&字典树&KMP（20260729）</a></td>
-                    <td><span class="score_5">6/11</span></td>
-                    <td>36</td>
-                    <td><span class="score_4">6/11</span></td>
-                    <td>ACM</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2551" target="_blank">20260730</a></td>
-                    <td><span class="score_9">335/400</span></td>
-                    <td>13</td>
-                    <td><span class="score_8">340/400</span></td>
-                    <td>NOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2553" target="_blank">分块&分治&平衡规划（20260731）</a></td>
-                    <td><span class="score_6">7/11</span></td>
-                    <td>26</td>
-                    <td><span class="score_6">7/11</span></td>
-                    <td>ACM</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2554" target="_blank">20260801</a></td>
-                    <td><span class="score_7">255/400</span></td>
-                    <td>35</td>
-                    <td><span class="score_6">255/400</span></td>
-                    <td>NOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2559" target="_blank">图的连通性（20260803）</a></td>
-                    <td><span class="score_5">6/11</span></td>
-                    <td>24</td>
-                    <td><span class="score_6">7/11</span></td>
-                    <td>ACM</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2561" target="_blank">20260804</a></td>
-                    <td><span class="score_4">180/400</span></td>
-                    <td>111</td>
-                    <td><span class="score_7">290/400</span></td>
-                    <td>NOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2562" target="_blank">20260805</a></td>
-                    <td><span class="score_6">250/400</span></td>
-                    <td>17</td>
-                    <td><span class="score_7">300/400</span></td>
-                    <td>NOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2564" target="_blank">图论综合（20260806）</a></td>
-                    <td><span class="score_4">5/11</span></td>
-                    <td>68</td>
-                    <td><span class="score_4">5/11</span></td>
-                    <td>ACM</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2565" target="_blank">20260807</a></td>
-                    <td><span class="score_8">290/400</span></td>
-                    <td>9</td>
-                    <td><span class="score_10">400/400</span></td>
-                    <td>NOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2566" target="_blank">20260808</a></td>
-                    <td><span class="score_8">310/400</span></td>
-                    <td>16</td>
-                    <td><span class="score_10">400/400</span></td>
-                    <td>NOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2572" target="_blank">数学相关（20260817）</a></td>
-                    <td><span class="score_6">8/12</span></td>
-                    <td>34</td>
-                    <td><span class="score_6">8/12</span></td>
-                    <td>ACM</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2573" target="_blank">20260818</a></td>
-                    <td><span class="score_4">160/400</span></td>
-                    <td>114</td>
-                    <td><span class="score_10">400/400</span></td>
-                    <td>NOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2574" target="_blank">组合计数（20260819）</a></td>
-                    <td><span class="score_10">11/11</span></td>
-                    <td>10</td>
-                    <td><span class="score_10">11/11</span></td>
-                    <td>ACM</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/2576" target="_blank">20260820</a></td>
-                    <td><span class="score_8">320/400</span></td>
-                    <td>8</td>
-                    <td><span class="score_8">320/400</span></td>
-                    <td>NOI</td>
-                </tr>
-                <tr>
-                    <td><a href="http://nflsoi.cc:20035/c/1975" target="_blank">交互题（20260821）</a></td>
-                    <td><span class="score_10">11/11</span></td>
-                    <td>8</td>
-                    <td><span class="score_10">11/11</span></td>
-                    <td>ACM</td>
-                </tr>
-            </tbody>
-        </table>
+<body>
+    <h1>📅 2026 Summer 汇总</h1>
+    <div id="container">
+        <div class="loading" id="loading">正在加载数据...</div>
+        <div id="entries"></div>
     </div>
+
+    <script>
+        (function() {
+            // ---------- 配置区域 ----------
+            // 三个子页面的 URL（同域下可直接 fetch）
+            const SOURCES = [
+                'https://huangxinyou.github.io/2026summer/ioi',
+                'https://huangxinyou.github.io/2026summer/noi',
+                'https://huangxinyou.github.io/2026summer/acm'
+            ];
+
+            // 选择器：根据实际页面结构调整
+            // 每个条目容器选择器（例如 .entry, li, .item 等）
+            const ITEM_SELECTOR = '.entry, li, .item, .post';
+            // 日期元素选择器（类名或属性）
+            const DATE_SELECTOR = '.date, .time, [datetime], .post-date';
+            // 标题/链接元素选择器（通常是 a 标签）
+            const TITLE_SELECTOR = 'a, .title, .post-title';
+
+            // ---------- 核心逻辑 ----------
+            async function fetchPage(url) {
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status} – ${url}`);
+                const html = await resp.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const entries = [];
+
+                // 查找所有条目
+                const items = doc.querySelectorAll(ITEM_SELECTOR);
+                for (const item of items) {
+                    const dateEl = item.querySelector(DATE_SELECTOR);
+                    const titleEl = item.querySelector(TITLE_SELECTOR);
+                    if (!dateEl || !titleEl) continue;
+
+                    let dateStr = dateEl.textContent.trim();
+                    // 尝试从 datetime 属性获取更精确的日期
+                    if (dateEl.hasAttribute('datetime')) {
+                        dateStr = dateEl.getAttribute('datetime') || dateStr;
+                    }
+                    // 尝试解析日期（支持 YYYY-MM-DD, MM/DD/YYYY, 英文月份等）
+                    let dateObj = parseDate(dateStr);
+                    if (!dateObj) {
+                        // 若解析失败，保留原始字符串，放到最后排序
+                        dateObj = null;
+                    }
+
+                    const title = titleEl.textContent.trim();
+                    const link = titleEl.getAttribute('href') || '#';
+
+                    entries.push({
+                        date: dateObj,
+                        dateDisplay: dateStr,
+                        title: title,
+                        link: link,
+                        source: extractSource(url)
+                    });
+                }
+                return entries;
+            }
+
+            // 尝试多种日期格式
+            function parseDate(str) {
+                if (!str) return null;
+                // 去掉前后空格
+                str = str.trim();
+                // 尝试 ISO 格式 (YYYY-MM-DD)
+                let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+                if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+
+                // 尝试 MM/DD/YYYY 或 MM-DD-YYYY
+                m = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+                if (m) return new Date(+m[3], +m[1] - 1, +m[2]);
+
+                // 尝试英文格式 (Aug 25, 2026 或 25 Aug 2026)
+                const date = new Date(str);
+                if (!isNaN(date)) return date;
+
+                // 尝试提取 YYYY 年 MM 月 DD 日
+                m = str.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/);
+                if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+
+                return null;
+            }
+
+            // 从 URL 提取来源名称
+            function extractSource(url) {
+                const parts = url.split('/');
+                return parts[parts.length - 1] || '未知';
+            }
+
+            // 渲染排序后的条目
+            function render(entries) {
+                const container = document.getElementById('entries');
+                const loading = document.getElementById('loading');
+                if (!entries || entries.length === 0) {
+                    container.innerHTML = '<div class="error">没有找到任何条目</div>';
+                    loading.style.display = 'none';
+                    return;
+                }
+
+                // 排序：有日期的按日期降序（最新在前），无日期的放最后
+                entries.sort((a, b) => {
+                    if (a.date && b.date) return b.date - a.date; // 降序
+                    if (a.date) return -1;
+                    if (b.date) return 1;
+                    return 0;
+                });
+
+                let html = '';
+                for (const item of entries) {
+                    const dateText = item.dateDisplay || '无日期';
+                    const link = item.link.startsWith('http') ? item.link : (item.link.startsWith('/') ? item.link : `./${item.link}`);
+                    html += `
+                        <div class="entry">
+                            <span class="date">${dateText}</span>
+                            <a href="${link}" class="title" target="_blank">${item.title}</a>
+                            <span class="source">${item.source}</span>
+                        </div>
+                    `;
+                }
+                container.innerHTML = html;
+                loading.style.display = 'none';
+            }
+
+            // 主流程
+            async function loadAll() {
+                const loading = document.getElementById('loading');
+                try {
+                    const results = await Promise.all(SOURCES.map(url => fetchPage(url)));
+                    const allEntries = results.flat();
+                    render(allEntries);
+                } catch (err) {
+                    loading.innerHTML = `<div class="error">❌ 加载失败：${err.message}</div>`;
+                    console.error(err);
+                }
+            }
+
+            // 执行
+            loadAll();
+        })();
+    </script>
+
+    <!-- 使用说明（可删除） -->
+    <!-- 
+        如果页面结构与示例选择器不符，请修改 ITEM_SELECTOR、DATE_SELECTOR、TITLE_SELECTOR。
+        例如：
+          - 如果你的条目是 <li class="post">，则 ITEM_SELECTOR = '.post'
+          - 日期在 <span class="meta-date">，则 DATE_SELECTOR = '.meta-date'
+          - 标题是 <a class="title-link">，则 TITLE_SELECTOR = '.title-link'
+        日期解析支持多种格式，若仍然无法识别，可在 parseDate 中增加自定义规则。
+    -->
 </body>
 </html>
