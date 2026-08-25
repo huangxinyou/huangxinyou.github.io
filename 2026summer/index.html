@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 Summer 汇总</title>
     <style>
-        /* 你可以替换成你原有 all.html 的样式 */
+        /* 你可以替换成你喜欢的样式，保持与原来 all 页面一致即可 */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             max-width: 900px;
@@ -69,19 +69,16 @@
     <script>
         (function() {
             // ---------- 配置区域 ----------
-            // 三个子页面的 URL（同域下可直接 fetch）
+            // 三个子页面的相对路径（与 index.html 在同一目录下）
             const SOURCES = [
-                'https://huangxinyou.github.io/2026summer/ioi',
-                'https://huangxinyou.github.io/2026summer/noi',
-                'https://huangxinyou.github.io/2026summer/acm'
+                'ioi',
+                'noi',
+                'acm'
             ];
 
             // 选择器：根据实际页面结构调整
-            // 每个条目容器选择器（例如 .entry, li, .item 等）
             const ITEM_SELECTOR = '.entry, li, .item, .post';
-            // 日期元素选择器（类名或属性）
             const DATE_SELECTOR = '.date, .time, [datetime], .post-date';
-            // 标题/链接元素选择器（通常是 a 标签）
             const TITLE_SELECTOR = 'a, .title, .post-title';
 
             // ---------- 核心逻辑 ----------
@@ -93,7 +90,6 @@
                 const doc = parser.parseFromString(html, 'text/html');
                 const entries = [];
 
-                // 查找所有条目
                 const items = doc.querySelectorAll(ITEM_SELECTOR);
                 for (const item of items) {
                     const dateEl = item.querySelector(DATE_SELECTOR);
@@ -101,16 +97,11 @@
                     if (!dateEl || !titleEl) continue;
 
                     let dateStr = dateEl.textContent.trim();
-                    // 尝试从 datetime 属性获取更精确的日期
                     if (dateEl.hasAttribute('datetime')) {
                         dateStr = dateEl.getAttribute('datetime') || dateStr;
                     }
-                    // 尝试解析日期（支持 YYYY-MM-DD, MM/DD/YYYY, 英文月份等）
                     let dateObj = parseDate(dateStr);
-                    if (!dateObj) {
-                        // 若解析失败，保留原始字符串，放到最后排序
-                        dateObj = null;
-                    }
+                    if (!dateObj) dateObj = null;
 
                     const title = titleEl.textContent.trim();
                     const link = titleEl.getAttribute('href') || '#';
@@ -126,37 +117,25 @@
                 return entries;
             }
 
-            // 尝试多种日期格式
             function parseDate(str) {
                 if (!str) return null;
-                // 去掉前后空格
                 str = str.trim();
-                // 尝试 ISO 格式 (YYYY-MM-DD)
                 let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
                 if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
-
-                // 尝试 MM/DD/YYYY 或 MM-DD-YYYY
                 m = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
                 if (m) return new Date(+m[3], +m[1] - 1, +m[2]);
-
-                // 尝试英文格式 (Aug 25, 2026 或 25 Aug 2026)
                 const date = new Date(str);
                 if (!isNaN(date)) return date;
-
-                // 尝试提取 YYYY 年 MM 月 DD 日
                 m = str.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/);
                 if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
-
                 return null;
             }
 
-            // 从 URL 提取来源名称
             function extractSource(url) {
                 const parts = url.split('/');
                 return parts[parts.length - 1] || '未知';
             }
 
-            // 渲染排序后的条目
             function render(entries) {
                 const container = document.getElementById('entries');
                 const loading = document.getElementById('loading');
@@ -166,9 +145,8 @@
                     return;
                 }
 
-                // 排序：有日期的按日期降序（最新在前），无日期的放最后
                 entries.sort((a, b) => {
-                    if (a.date && b.date) return b.date - a.date; // 降序
+                    if (a.date && b.date) return b.date - a.date;
                     if (a.date) return -1;
                     if (b.date) return 1;
                     return 0;
@@ -177,6 +155,7 @@
                 let html = '';
                 for (const item of entries) {
                     const dateText = item.dateDisplay || '无日期';
+                    // 如果链接是相对路径，保留原样；如果是绝对路径则直接使用
                     const link = item.link.startsWith('http') ? item.link : (item.link.startsWith('/') ? item.link : `./${item.link}`);
                     html += `
                         <div class="entry">
@@ -190,7 +169,6 @@
                 loading.style.display = 'none';
             }
 
-            // 主流程
             async function loadAll() {
                 const loading = document.getElementById('loading');
                 try {
@@ -203,19 +181,8 @@
                 }
             }
 
-            // 执行
             loadAll();
         })();
     </script>
-
-    <!-- 使用说明（可删除） -->
-    <!-- 
-        如果页面结构与示例选择器不符，请修改 ITEM_SELECTOR、DATE_SELECTOR、TITLE_SELECTOR。
-        例如：
-          - 如果你的条目是 <li class="post">，则 ITEM_SELECTOR = '.post'
-          - 日期在 <span class="meta-date">，则 DATE_SELECTOR = '.meta-date'
-          - 标题是 <a class="title-link">，则 TITLE_SELECTOR = '.title-link'
-        日期解析支持多种格式，若仍然无法识别，可在 parseDate 中增加自定义规则。
-    -->
 </body>
 </html>
