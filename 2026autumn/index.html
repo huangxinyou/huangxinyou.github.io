@@ -1,0 +1,302 @@
+<!DOCTYPE html> 
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汇总成绩表</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .hero {
+        min-height: 100vh;
+        animation: bgFlow 10s ease-in-out infinite alternate;
+    }
+
+    /* 核心流动动画：让大渐变在背景中缓慢漂移 */
+    @keyframes bgFlow {
+        0% {
+            background-position: 0% 0%, 0% 0%, 0% 0%;
+        }
+        25% {
+            background-position: 0% 0%, 0% 0%, 100% 0%;
+        }
+        50% {
+            background-position: 0% 0%, 0% 0%, 100% 100%;
+        }
+        75% {
+            background-position: 0% 0%, 0% 0%, 0% 100%;
+        }
+        100% {
+            background-position: 0% 0%, 0% 0%, 50% 50%;
+        }
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 20px;
+        font-weight: bold;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        table-layout: auto;
+        font-size: 0.8rem
+    }
+    th, td {
+        padding: 14px 20px;
+        text-align: left;
+        border-bottom: 1px solid #edf2f7;
+    }
+    th {
+        background: #2d3748;
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    tr:hover {
+        background: #f7fafc;
+    }
+    td a {
+        color: #2d3748;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    td a:hover {
+        text-decoration: underline;
+        color: #1a202c;
+    }
+    td span {
+        font-weight: 600;
+    }
+    td:last-child {
+        font-weight: 600;
+        color: #2d3748;
+    }
+    h1 {
+        color: white;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .score_10 { color: forestgreen; }
+    .score_9  { color: #34d034; }
+    .score_8  { color: #41f741; }
+    .score_7  { color: #52ff00; }
+    .score_6  { color: #a5ff00; }
+    .score_5  { color: #c8ff00; }
+    .score_4  { color: #ffd800; }
+    .score_3  { color: #ffa900; }
+    .score_2  { color: #ff6200; }
+    .score_1  { color: #ff4b00; }
+    .score_0  { color: red; }
+
+    /* 加载状态提示 */
+    #loading-msg {
+        text-align: center;
+        padding: 2rem 0;
+        color: white;
+        font-size: 1.2rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+</style>
+<script>
+    /**
+     * 生成完全随机的 HSL 颜色（带透明度可选）
+     */
+    function randomHSL(alpha = 1) {
+        const h = Math.floor(Math.random() * 360);
+        const s = 40 + Math.floor(Math.random() * 41);
+        const l = 50 + Math.floor(Math.random() * 31);
+        if (alpha >= 1) return `hsl(${h}, ${s}%, ${l}%)`;
+        return `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
+    }
+
+    /**
+     * 生成完全随机的背景样式（三层叠加）
+     */
+    function generateRandomBackground() {
+        const x1 = 10 + Math.random() * 80;
+        const y1 = 10 + Math.random() * 80;
+        const x2 = 10 + Math.random() * 80;
+        const y2 = 10 + Math.random() * 80;
+        const glow1 = randomHSL(0.20 + Math.random() * 0.15);
+        const glow2 = randomHSL(0.20 + Math.random() * 0.15);
+        var colorCount = 10 + Math.floor(Math.random() * 6);
+        const colors = [];
+        for (var i = 0; i < colorCount; i++) {
+            colors.push(randomHSL(1));
+        }
+        const angle = Math.floor(Math.random() * 360);
+        return `
+            radial-gradient(ellipse at ${x1}% ${y1}%, ${glow1} 0%, transparent 50%),
+            radial-gradient(ellipse at ${x2}% ${y2}%, ${glow2} 0%, transparent 50%),
+            linear-gradient(${angle}deg, ${colors.join(', ')})
+        `.trim();
+    }
+
+    // 页面加载时应用随机背景
+    document.addEventListener('DOMContentLoaded', function() {
+        const hero = document.querySelector('.hero');
+        if (hero) {
+            hero.style.background = generateRandomBackground();
+            hero.style.backgroundSize = '100% 100%, 100% 100%, 600% 600%';
+        }
+    });
+</script>
+</head>
+<body class="hero font-sans antialiased text-gray-800 py-10">
+    <div class="container">
+        <h1 class="text-3xl font-bold">🏆 2026秋季成绩表</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>📅 算法（日期）/日期</th>
+                    <th>📊 题数</th>
+                    <th>🏅 排名</th>
+                    <th>📝 补题</th>
+                    <th>🏷️ 类型</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <tr id="loading-row"><td colspan="5" style="text-align:center; padding:2rem; color:#666;">⏳ 加载数据中…</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        (function() {
+            // ---------- 配置 ----------
+            const SOURCES = [
+                { url: 'ioi', label: 'IOI' },
+                { url: 'acm', label: 'ACM' }
+            ];
+
+            // ---------- 工具函数 ----------
+            // 提取8位数字日期 (YYYYMMDD)
+            function extractDate(text) {
+                const m = text.match(/\b(\d{8})\b/);
+                return m ? m[1] : null;
+            }
+
+            function parseDateStr(str) {
+                if (!str) return null;
+                const year = parseInt(str.substring(0,4), 10);
+                const month = parseInt(str.substring(4,6), 10) - 1;
+                const day = parseInt(str.substring(6,8), 10);
+                if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+                    return new Date(year, month, day);
+                }
+                return null;
+            }
+
+            // 从URL获取页面HTML
+            async function fetchPage(url) {
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status} – ${url}`);
+                return await resp.text();
+            }
+
+            // 解析单个页面，返回条目数组
+            function parsePage(html, sourceLabel) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const rows = doc.querySelectorAll('table tbody tr, table tr');
+                const entries = [];
+
+                for (const row of rows) {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length < 4) continue; // 至少要有4列
+
+                    // 第一列内容（含链接、文本）
+                    const col1 = cells[0];
+                    const col1Text = col1.textContent.trim();
+                    const dateStr = extractDate(col1Text);
+                    if (!dateStr) continue; // 没有日期则跳过
+
+                    const dateObj = parseDateStr(dateStr);
+
+                    // 保留各列的 innerHTML（保留样式和链接）
+                    const col1HTML = col1.innerHTML.trim();
+                    const col2HTML = cells[1].innerHTML.trim();
+                    const col3HTML = cells[2].innerHTML.trim();
+                    const col4HTML = cells[3].innerHTML.trim();
+
+                    entries.push({
+                        dateObj: dateObj,
+                        dateStr: dateStr,
+                        col1: col1HTML,
+                        col2: col2HTML,
+                        col3: col3HTML,
+                        col4: col4HTML,
+                        source: sourceLabel
+                    });
+                }
+                return entries;
+            }
+
+            // ---------- 主流程 ----------
+            async function loadAll() {
+                const tbody = document.getElementById('table-body');
+                try {
+                    // 并行请求三个页面
+                    const results = await Promise.all(
+                        SOURCES.map(async (s) => {
+                            try {
+                                const html = await fetchPage(s.url);
+                                const entries = parsePage(html, s.label);
+                                return entries;
+                            } catch (err) {
+                                console.warn(`加载 ${s.url} 失败:`, err);
+                                return [];
+                            }
+                        })
+                    );
+
+                    // 合并所有条目
+                    let allEntries = [];
+                    results.forEach(entries => allEntries = allEntries.concat(entries));
+
+                    // 按日期降序排序（最新在前）
+                    allEntries.sort((a, b) => {
+                        if (a.dateObj && b.dateObj) return b.dateObj - a.dateObj;
+                        if (a.dateObj) return -1;
+                        if (b.dateObj) return 1;
+                        return 0;
+                    });
+
+                    // 生成表格行 HTML
+                    let rowsHTML = '';
+                    if (allEntries.length === 0) {
+                        rowsHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:#666;">没有找到任何记录</td></tr>`;
+                    } else {
+                        for (const item of allEntries) {
+                            rowsHTML += `
+                                <tr>
+                                    <td>${item.col1}</td>
+                                    <td>${item.col2}</td>
+                                    <td>${item.col3}</td>
+                                    <td>${item.col4}</td>
+                                    <td>${item.source}</td>
+                                </tr>
+                            `;
+                        }
+                    }
+
+                    tbody.innerHTML = rowsHTML;
+
+                } catch (err) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:red;">❌ 加载失败：${err.message}</td></tr>`;
+                    console.error(err);
+                }
+            }
+
+            // 执行
+            loadAll();
+        })();
+    </script>
+</body>
+</html>
