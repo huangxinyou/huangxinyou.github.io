@@ -1,101 +1,176 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>综合成绩表</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专题成绩表</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* ===== 动态背景（流动渐变） ===== */
+        /* ===== 原有背景动画 ===== */
         .hero {
             min-height: 100vh;
             animation: bgFlow 10s ease-in-out infinite alternate;
         }
 
         @keyframes bgFlow {
-            0% { background-position: 0% 0%, 0% 0%, 0% 0%; }
-            25% { background-position: 0% 0%, 0% 0%, 100% 0%; }
-            50% { background-position: 0% 0%, 0% 0%, 100% 100%; }
-            75% { background-position: 0% 0%, 0% 0%, 0% 100%; }
-            100% { background-position: 0% 0%, 0% 0%, 50% 50%; }
+            0% {
+                background-position: 0% 0%, 0% 0%, 0% 0%;
+            }
+            25% {
+                background-position: 0% 0%, 0% 0%, 100% 0%;
+            }
+            50% {
+                background-position: 0% 0%, 0% 0%, 100% 100%;
+            }
+            75% {
+                background-position: 0% 0%, 0% 0%, 0% 100%;
+            }
+            100% {
+                background-position: 0% 0%, 0% 0%, 50% 50%;
+            }
         }
 
+        /* ===== 容器 & 基础 ===== */
         .container {
             max-width: 900px;
             margin: 0 auto;
             padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* 让所有子元素水平居中 */
+            justify-content: center;
+            min-height: 100vh;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            font-size: 0.9rem;
-        }
-
-        th, td {
-            padding: 14px 20px;
-            text-align: left;
-            border-bottom: 1px solid #edf2f7;
-        }
-
-        th {
-            background: #2d3748;
+        /* ===== 标题样式 ===== */
+        .main-title {
+            font-size: 4rem;
+            font-weight: 800;
             color: white;
-            font-weight: 600;
-            font-size: 1rem;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            margin-bottom: 2.5rem;
+            letter-spacing: 4px;
         }
 
-        tr:hover {
-            background: #f7fafc;
+        /* ===== 三个链接容器 ===== */
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 3rem;
+            /* 链接之间的间距 */
         }
 
-        td a {
-            color: #2d3748;
+        /* ===== 单个链接样式 ===== */
+        .nav-link {
+            font-size: 2.25rem;
+            /* text-4xl */
+            font-weight: 700;
+            color: white;
             text-decoration: none;
-            font-weight: 500;
-        }
-        td a:hover {
-            text-decoration: underline;
-            color: #1a202c;
-        }
-
-        h1 {
-            color: white;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            text-align: center;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            letter-spacing: 2px;
         }
 
-        /* ===== 分数颜色（照搬你原来的） ===== */
-        .score_10 { color: forestgreen; }
-        .score_9  { color: #34d034; }
-        .score_8  { color: #41f741; }
-        .score_7  { color: #52ff00; }
-        .score_6  { color: #a5ff00; }
-        .score_5  { color: #c8ff00; }
-        .score_4  { color: #ffd800; }
-        .score_3  { color: #ffa900; }
-        .score_2  { color: #ff6200; }
-        .score_1  { color: #ff4b00; }
-        .score_0  { color: red; }
-
-        .loading-msg, .error-msg {
-            text-align: center;
-            padding: 2rem;
-            color: white;
-            font-size: 1.2rem;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        /* 链接悬停效果：上浮 + 发光 + 轻微缩放 */
+        .nav-link:hover {
+            transform: translateY(-4px) scale(1.04);
+            color: #f0f9ff;
+            text-shadow: 0 6px 24px rgba(255, 255, 255, 0.25);
         }
-        .error-msg { color: #fee2e2; }
+
+        /* 链接底部装饰线（悬停时出现） */
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -4px;
+            width: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .nav-link:hover::after {
+            width: 80%;
+        }
+
+        /* ===== 响应式微调 ===== */
+        @media (max-width: 640px) {
+            .main-title {
+                font-size: 2.8rem;
+            }
+            .nav-link {
+                font-size: 1.6rem;
+                /* 手机端稍小，但仍然突出 */
+                padding: 0.3rem 0.6rem;
+            }
+            .nav-links {
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .main-title {
+                font-size: 2.2rem;
+            }
+            .nav-link {
+                font-size: 1.3rem;
+            }
+            .nav-links {
+                gap: 1rem;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* ===== 原有评分样式（保留） ===== */
+        .score_10 {
+            color: forestgreen;
+        }
+        .score_9 {
+            color: #34d034;
+        }
+        .score_8 {
+            color: #41f741;
+        }
+        .score_7 {
+            color: #52ff00;
+        }
+        .score_6 {
+            color: #a5ff00;
+        }
+        .score_5 {
+            color: #c8ff00;
+        }
+        .score_4 {
+            color: #ffd800;
+        }
+        .score_3 {
+            color: #ffa900;
+        }
+        .score_2 {
+            color: #ff6200;
+        }
+        .score_1 {
+            color: #ff4b00;
+        }
+        .score_0 {
+            color: red;
+        }
     </style>
 
     <script>
-        // ===== 随机背景生成 =====
+        /**
+         * 生成完全随机的 HSL 颜色（带透明度可选）
+         */
         function randomHSL(alpha = 1) {
             const h = Math.floor(Math.random() * 360);
             const s = 40 + Math.floor(Math.random() * 41);
@@ -104,19 +179,26 @@
             return `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
         }
 
+        /**
+         * 生成完全随机的背景样式（三层叠加）
+         */
         function generateRandomBackground() {
             const x1 = 10 + Math.random() * 80;
             const y1 = 10 + Math.random() * 80;
             const x2 = 10 + Math.random() * 80;
             const y2 = 10 + Math.random() * 80;
+
             const glow1 = randomHSL(0.20 + Math.random() * 0.15);
             const glow2 = randomHSL(0.20 + Math.random() * 0.15);
+
             const colorCount = 10 + Math.floor(Math.random() * 6);
             const colors = [];
-            for (let i = 0; i < colorCount; i++) {
+            for (var i = 0; i < colorCount; i++) {
                 colors.push(randomHSL(1));
             }
+
             const angle = Math.floor(Math.random() * 360);
+
             return `
                 radial-gradient(ellipse at ${x1}% ${y1}%, ${glow1} 0%, transparent 50%),
                 radial-gradient(ellipse at ${x2}% ${y2}%, ${glow2} 0%, transparent 50%),
@@ -124,7 +206,7 @@
             `.trim();
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const hero = document.querySelector('.hero');
             if (hero) {
                 hero.style.background = generateRandomBackground();
@@ -134,107 +216,19 @@
     </script>
 </head>
 
-<body class="hero font-sans antialiased text-gray-800 py-10">
+<body class="hero font-sans antialiased text-gray-800">
 
     <div class="container">
-        <h1 class="text-4xl font-bold">🏆 2026 赛季综合成绩表</h1>
+        <!-- ===== 标题 ===== -->
+        <h1 class="main-title">2026</h1>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>📅 算法（日期）/日期</th>
-                    <th>📊 题数</th>
-                    <th>🏅 排名</th>
-                    <th>📝 补题</th>
-                    <th>🏷️ 赛季</th>
-                </tr>
-            </thead>
-            <tbody id="unified-body">
-                <!-- 数据会由 JavaScript 动态渲染 -->
-            </tbody>
-        </table>
+        <!-- ===== 三个导航链接：居中 + 变大 ===== -->
+        <div class="nav-links">
+            <a href="/2026spring" target="_blank" class="nav-link">2026春季</a>
+            <a href="/2026summer" target="_blank" class="nav-link">2026暑假</a>
+            <a href="/2026autumn" target="_blank" class="nav-link">2026秋季</a>
+        </div>
     </div>
 
-    <script>
-        (function() {
-            // ================================================================
-            // ★ 在这里修改或增删数据 ★
-            // 每条记录格式：
-            //   date: 8位数字日期（用于排序）
-            //   col1: 第一列内容（可包含 HTML，如链接）
-            //   col2: 第二列（题数）
-            //   col3: 第三列（排名）
-            //   col4: 第四列（补题）
-            //   season: 赛季标签（显示在最后一列）
-            // ================================================================
-            const DATA = [
-                // 暑假数据（按日期从新到旧排列，但程序会自动排序）
-                { date: "20260822", col1: "20260822", col2: "240/400", col3: "19", col4: "240/400", season: "☀️ 暑假" },
-                { date: "20260821", col1: "交互题 (20260821)", col2: "11/11", col3: "8", col4: "11/11", season: "☀️ 暑假" },
-                { date: "20260820", col1: "20260820", col2: "320/400", col3: "8", col4: "320/400", season: "☀️ 暑假" },
-                { date: "20260819", col1: "组合计数 (20260819)", col2: "11/11", col3: "10", col4: "11/11", season: "☀️ 暑假" },
-                { date: "20260818", col1: "20260818", col2: "160/400", col3: "114", col4: "400/400", season: "☀️ 暑假" },
-                { date: "20260817", col1: "数学相关 (20260817)", col2: "8/12", col3: "34", col4: "8/12", season: "☀️ 暑假" },
-                // 你可以继续添加春季、秋季的数据，格式同上
-                // 例如：
-                // { date: "20260301", col1: "20260301", col2: "100/200", col3: "5", col4: "100/200", season: "🌸 春季" },
-            ];
-
-            // ---------- 工具：解析日期 ----------
-            function parseDateStr(str) {
-                if (!str) return null;
-                const year = parseInt(str.substring(0, 4), 10);
-                const month = parseInt(str.substring(4, 6), 10) - 1;
-                const day = parseInt(str.substring(6, 8), 10);
-                if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
-                    return new Date(year, month, day);
-                }
-                return null;
-            }
-
-            // ---------- 渲染 ----------
-            function renderTable(data) {
-                const tbody = document.getElementById('unified-body');
-                if (!tbody) return;
-
-                // 添加日期对象用于排序
-                const withDate = data.map(item => ({
-                    ...item,
-                    dateObj: parseDateStr(item.date)
-                }));
-
-                // 按日期降序（最新在前）
-                withDate.sort((a, b) => {
-                    if (a.dateObj && b.dateObj) return b.dateObj - a.dateObj;
-                    if (a.dateObj) return -1;
-                    if (b.dateObj) return 1;
-                    return 0;
-                });
-
-                let rowsHTML = '';
-                if (withDate.length === 0) {
-                    rowsHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:#666;">📭 暂无比赛记录</td></tr>`;
-                } else {
-                    for (const item of withDate) {
-                        rowsHTML += `
-                            <tr>
-                                <td>${item.col1}</td>
-                                <td>${item.col2}</td>
-                                <td>${item.col3}</td>
-                                <td>${item.col4}</td>
-                                <td>${item.season}</td>
-                            </tr>
-                        `;
-                    }
-                }
-                tbody.innerHTML = rowsHTML;
-            }
-
-            // 页面加载后渲染
-            document.addEventListener('DOMContentLoaded', function() {
-                renderTable(DATA);
-            });
-        })();
-    </script>
 </body>
 </html>
