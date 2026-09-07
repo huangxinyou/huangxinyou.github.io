@@ -82,6 +82,93 @@
         margin-bottom: 1.5rem;
         text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
+    .main-title {
+            font-size: 4rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            margin-bottom: 2.5rem;
+            letter-spacing: 4px;
+        }
+
+        /* ===== 三个链接容器 ===== */
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 3rem;
+            /* 链接之间的间距 */
+            margin-top: 3rem;  /* ← 新增：整体下移 */
+        }
+
+        /* ===== 单个链接样式 ===== */
+        .nav-link {
+            font-size: 2.25rem;
+            /* text-4xl */
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            letter-spacing: 2px;
+        }
+
+        /* 链接悬停效果：上浮 + 发光 + 轻微缩放 */
+        .nav-link:hover {
+            transform: translateY(-4px) scale(1.04);
+            color: #f0f9ff;
+            text-shadow: 0 6px 24px rgba(255, 255, 255, 0.25);
+        }
+
+        /* 链接底部装饰线（悬停时出现） */
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -4px;
+            width: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .nav-link:hover::after {
+            width: 80%;
+        }
+
+        /* ===== 响应式微调 ===== */
+        @media (max-width: 640px) {
+            .main-title {
+                font-size: 2.8rem;
+            }
+            .nav-link {
+                font-size: 1.6rem;
+                /* 手机端稍小，但仍然突出 */
+                padding: 0.3rem 0.6rem;
+            }
+            .nav-links {
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .main-title {
+                font-size: 2.2rem;
+            }
+            .nav-link {
+                font-size: 1.3rem;
+            }
+            .nav-links {
+                gap: 1rem;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
     .score_10 { color: forestgreen; }
     .score_9  { color: #34d034; }
     .score_8  { color: #41f741; }
@@ -298,5 +385,11 @@
             loadAll();
         })();
     </script>
+        <div class="nav-links">
+            <a href="/2026spring/ioi" target="_blank" class="nav-link">IOI</a>
+            <a href="/2026spring/acm" target="_blank" class="nav-link">ACM</a>
+            <a href="/2026spring/all" target="_blank" class="nav-link">ALL</a>
+        </div>
+    
 </body>
 </html>
