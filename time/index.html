@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>左右双计时器 · 带开始暂停与音效</title>
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 32px 18px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    background:
+      radial-gradient(1000px 520px at 50% -15%, #16233d 0%, rgba(10,14,23,0) 70%),
+      #080b12;
+    color: #e8eefc;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 6px;
+    color: #6f7d9c;
+  }
+
+  /* ---------- 主面板 ---------- */
+  .board {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .panel {
+    width: 290px;
+    min-height: 230px;
+    padding: 22px 20px;
+    border-radius: 26px;
+    background: rgba(255, 255, 255, .035);
+    border: 1px solid rgba(255, 255, 255, .08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: background .35s ease, border-color .35s ease,
+                box-shadow .35s ease, transform .35s ease;
+  }
+
+  .panel .tag {
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: #7f8cab;
+  }
+
+  .panel .time {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 46px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    transition: color .35s ease, text-shadow .35s ease;
+  }
+
+  .panel .sub { font-size: 12px; color: #7f8cab; }
+
+  /* 控制按钮行 */
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .ctrl-btn {
+    font-family: inherit;
+    font-size: 13px;
+    padding: 7px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    background: rgba(255, 255, 255, .06);
+    color: #d0dbf0;
+    cursor: pointer;
+    transition: .2s;
+    min-width: 74px;
+  }
+  .ctrl-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, .14);
+    border-color: rgba(255, 255, 255, .4);
+    color: #fff;
+  }
+  .ctrl-btn:active:not(:disabled) { transform: scale(.95); }
+  .ctrl-btn:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+    filter: grayscale(.5);
+  }
+
+  /* 左侧高亮 */
+  .panel.left.active {
+    background: rgba(77, 163, 255, .10);
+    border-color: rgba(77, 163, 255, .55);
+    box-shadow: 0 0 40px rgba(77, 163, 255, .18), inset 0 0 40px rgba(77, 163, 255, .05);
+  }
+  .panel.left.active .time { color: #7cc0ff; text-shadow: 0 0 26px rgba(77, 163, 255, .55); }
+  .panel.left.active .tag  { color: #4da3ff; }
+
+  /* 右侧高亮 */
+  .panel.right.active {
+    background: rgba(255, 179, 71, .10);
+    border-color: rgba(255, 179, 71, .55);
+    box-shadow: 0 0 40px rgba(255, 179, 71, .16), inset 0 0 40px rgba(255, 179, 71, .05);
+  }
+  .panel.right.active .time { color: #ffc46b; text-shadow: 0 0 26px rgba(255, 179, 71, .5); }
+  .panel.right.active .tag  { color: #ffb347; }
+
+  /* ---------- 中间切换键 ---------- */
+  .center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    min-width: 130px;
+  }
+
+  .switch {
+    width: 108px;
+    height: 108px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, .16);
+    background: linear-gradient(160deg, rgba(120, 170, 255, .30), rgba(120, 170, 255, .05));
+    color: #eaf1ff;
+    font-family: inherit;
+    font-size: 14px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: transform .18s ease, box-shadow .3s ease,
+                border-color .3s ease, background .3s ease;
+  }
+  .switch:hover {
+    transform: scale(1.05);
+    border-color: rgba(140, 185, 255, .75);
+    box-shadow: 0 0 34px rgba(90, 150, 255, .35);
+  }
+  .switch:active { transform: scale(.95); }
+  .switch .arrow { font-size: 20px; line-height: 1; }
+  .switch .switch-text { font-size: 13px; opacity: .9; }
+
+  .status {
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: #7f8cab;
+    min-height: 16px;
+  }
+
+  /* ---------- 记录区 ---------- */
+  .log {
+    width: min(760px, 100%);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, .08);
+    background: rgba(255, 255, 255, .025);
+    padding: 16px 18px 14px;
+  }
+
+  .log-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .log-head h2 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    color: #7f8cab;
+  }
+
+  .clear {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, .14);
+    color: #8e9ab8;
+    font-family: inherit;
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: .2s;
+  }
+  .clear:hover { color: #fff; border-color: rgba(255, 255, 255, .35); }
+
+  #logList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  #logList::-webkit-scrollbar { width: 6px; }
+  #logList::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, .15);
+    border-radius: 3px;
+  }
+
+  #logList li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border-radius: 11px;
+    background: rgba(255, 255, 255, .035);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  #logList li .idx { color: #7f8cab; font-size: 12px; }
+  #logList li .val { color: #7cc0ff; font-weight: 700; }
+  #logList li.latest {
+    background: rgba(77, 163, 255, .13);
+    box-shadow: inset 0 0 0 1px rgba(77, 163, 255, .30);
+  }
+  #logList li.empty {
+    justify-content: center;
+    background: transparent;
+    color: #55617d;
+    font-size: 12.5px;
+    font-family: inherit;
+  }
+
+  /* 时长输入 */
+  .sub input {
+    width: 56px;
+    padding: 4px 6px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, .14);
+    background: rgba(0, 0, 0, .25);
+    color: inherit;
+    font-family: inherit;
+    font-size: 12px;
+    text-align: center;
+  }
+  .sub input:focus {
+    outline: none;
+    border-color: rgba(255, 179, 71, .6);
+  }
+
+  /* ---------- 响应式 ---------- */
+  @media (max-width: 760px) {
+    .board { flex-direction: column; width: 100%; }
+    .panel { width: 100%; max-width: 430px; min-height: 190px; }
+    .panel .time { font-size: 40px; }
+    .switch { width: 92px; height: 92px; }
+    .controls { flex-wrap: wrap; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+  <h1>左 右 双 计 时 器</h1>
+
+  <div class="board">
+
+    <!-- 左：正计时 -->
+    <section class="panel left active" id="leftPanel">
+      <div class="tag">正 计 时</div>
+      <div class="time" id="leftTime">00:00.0</div>
+      <div class="controls">
+        <button class="ctrl-btn" id="leftStartPauseBtn" type="button">开始</button>
+      </div>
+    </section>
+
+    <!-- 中：切换 -->
+    <div class="center">
+      <button class="switch" id="switchBtn" type="button">
+        <span class="arrow" id="arrowIcon">▶</span>
+        <span class="switch-text">切换</span>
+      </button>
+      <div class="status" id="status">左侧已暂停</div>
+    </div>
+
+    <!-- 右：倒计时 -->
+    <section class="panel right" id="rightPanel">
+      <div class="tag">倒 计 时</div>
+      <div class="time" id="rightTime">01:00.0</div>
+      <div class="sub">
+        <label>时长 <input id="minutes" type="number" min="0.1" max="180" step="0.5" value="1" /> 分钟</label>
+      </div>
+      <div class="controls">
+        <button class="ctrl-btn" id="rightStartPauseBtn" type="button" disabled>开始</button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- 记录 -->
+  <div class="log">
+    <div class="log-head">
+      <h2>左 侧 计 时 记 录</h2>
+      <button class="clear" id="clearBtn" type="button">清空</button>
+    </div>
+    <ul id="logList"></ul>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- 元素 ---------- */
+  const leftPanel        = document.getElementById('leftPanel');
+  const rightPanel       = document.getElementById('rightPanel');
+  const leftTimeEl       = document.getElementById('leftTime');
+  const rightTimeEl      = document.getElementById('rightTime');
+  const switchBtn        = document.getElementById('switchBtn');
+  const arrowIcon        = document.getElementById('arrowIcon');
+  const statusEl         = document.getElementById('status');
+  const logList          = document.getElementById('logList');
+  const clearBtn         = document.getElementById('clearBtn');
+  const minutesInput     = document.getElementById('minutes');
+  const leftStartPauseBtn  = document.getElementById('leftStartPauseBtn');
+  const rightStartPauseBtn = document.getElementById('rightStartPauseBtn');
+
+  const DEFAULT_MINUTES = 1;                 // 默认 1 分钟
+  const DEFAULT_TOTAL   = DEFAULT_MINUTES * 60000;
+
+  /* ---------- 状态 ---------- */
+  let mode = 'left';                         // 'left' | 'right'
+
+  // 左侧状态
+  let leftRunning   = false;
+  let leftElapsed   = 0;                     // 已累计毫秒
+  let leftStartTime = 0;                     // 运行时的起点 performance.now()
+
+  // 右侧状态
+  let rightTotal     = DEFAULT_TOTAL;        // 总时长
+  let rightRemaining = DEFAULT_TOTAL;        // 剩余时长
+  let rightRunning   = false;
+  let rightEndTime   = 0;                    // 运行时的结束时刻
+
+  let records = [];
+  let rafId   = null;
+
+  /* ---------- 工具 ---------- */
+  function fmt(ms) {
+    if (!isFinite(ms) || ms < 0) ms = 0;
+    const t = Math.floor(ms);
+    const m = Math.floor(t / 60000);
+    const s = Math.floor((t % 60000) / 1000);
+    const d = Math.floor((t % 1000) / 100);   // 十分之一秒
+    return String(m).padStart(2, '0') + ':' +
+           String(s).padStart(2, '0') + '.' + d;
+  }
+
+  /* ---------- 声音效果（连续 10 声） ---------- */
+  let audioCtx = null;
+  function getAudioCtx() {
+    if (!audioCtx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return null;
+      audioCtx = new AudioCtx();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  // 记录当前正在发声的振荡器，切换过快时先掐掉上一组声音
+  let activeOscillators = [];
+  function stopAllSounds() {
+    activeOscillators.forEach(function (o) {
+      try { o.stop(); } catch (e) {}
+    });
+    activeOscillators = [];
+  }
+
+  /**
+   * 连续 10 声提示音
+   * @param {'toRight'|'toLeft'} type
+   */
+  function playSwitchSound(type) {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+
+    stopAllSounds();                 // 避免多次切换声音叠在一起
+
+    const t0 = ctx.currentTime + 0.02;   // 稍微延后，确保调度稳定
+
+    const BEEP_COUNT    = 10;        // 连续 10 声
+    const BEEP_DURATION = 0.085;     // 每声持续 85ms
+    const BEEP_INTERVAL = 0.125;     // 每声间隔 125ms（总时长约 1.2 秒）
+
+    const baseFreq = type === 'toRight' ? 880 : 660;  // 左→右高音 / 右→左低音
+    const peakGain = 0.85;                            // 音量（已调大）
+
+    for (let i = 0; i < BEEP_COUNT; i++) {
+      const start = t0 + i * BEEP_INTERVAL;
+      const end   = start + BEEP_DURATION;
+
+      // 主音：三角波，泛音丰富，听感响亮
+      const osc = ctx.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(baseFreq, start);
+
+      // 泛音：叠加一个八度，增强穿透力
+      const osc2 = ctx.createOscillator();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(baseFreq * 2, start);
+
+      const g1 = ctx.createGain();
+      const g2 = ctx.createGain();
+
+      // 主音包络：快速起音 → 平滑收尾
+      g1.gain.setValueAtTime(0.0001, start);
+      g1.gain.exponentialRampToValueAtTime(peakGain, start + 0.01);
+      g1.gain.exponentialRampToValueAtTime(0.0001, end);
+
+      // 泛音包络：约为主音一半
+      g2.gain.setValueAtTime(0.0001, start);
+      g2.gain.exponentialRampToValueAtTime(peakGain * 0.45, start + 0.01);
+      g2.gain.exponentialRampToValueAtTime(0.0001, end);
+
+      osc.connect(g1);
+      osc2.connect(g2);
+      g1.connect(ctx.destination);
+      g2.connect(ctx.destination);
+
+      osc.start(start);
+      osc2.start(start);
+      osc.stop(end);
+      osc2.stop(end);
+
+      activeOscillators.push(osc, osc2);
+    }
+
+    // 声音播放完后清理引用
+    setTimeout(function () {
+      activeOscillators = [];
+    }, (BEEP_COUNT * BEEP_INTERVAL + 0.4) * 1000);
+  }
+
+  /* ---------- 主循环 ---------- */
+  function frame() {
+    const now = performance.now();
+
+    if (mode === 'left') {
+      if (leftRunning) {
+        leftElapsed = now - leftStartTime;
+        leftTimeEl.textContent = fmt(leftElapsed);
+      }
+      rafId = requestAnimationFrame(frame);
+      return;
+    }
+
+    // 右侧倒计时
+    if (rightRunning) {
+      const remain = rightEndTime - now;
+      if (remain <= 0) {
+        rightRemaining = 0;
+        rightTimeEl.textContent = fmt(0);
+        rightRunning = false;
+        // 倒计时结束 → 自动切换到左边
+        switchToLeft(true);
+        return;
+      }
+      rightRemaining = remain;
+      rightTimeEl.textContent = fmt(remain);
+    }
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function restartLoop() {
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+    rafId = requestAnimationFrame(frame);
+  }
+
+  /* ---------- 界面更新 ---------- */
+  function updateUI() {
+    const isLeft = (mode === 'left');
+    leftPanel.classList.toggle('active', isLeft);
+    rightPanel.classList.toggle('active', !isLeft);
+    arrowIcon.textContent = isLeft ? '▶' : '◀';
+    statusEl.textContent  = isLeft
+      ? (leftRunning ? '左侧正计时中' : '左侧已暂停')
+      : (rightRunning ? '右侧倒计时中' : '右侧已暂停');
+
+    // 左侧按钮
+    leftStartPauseBtn.disabled = !isLeft;
+    if (isLeft) {
+      leftStartPauseBtn.textContent = leftRunning
+        ? '暂停'
+        : (leftElapsed > 0 ? '继续' : '开始');
+    }
+
+    // 右侧按钮
+    rightStartPauseBtn.disabled = isLeft;
+    if (!isLeft) {
+      rightStartPauseBtn.textContent = rightRunning
+        ? '暂停'
+        : (rightRemaining < rightTotal && rightRemaining > 0 ? '继续' : '开始');
+    }
+  }
+
+  function renderLog() {
+    if (records.length === 0) {
+      logList.innerHTML =
+        '<li class="empty">还没有记录 — 从左边切到右边时会自动记下左侧用时</li>';
+      return;
+    }
+    const parts = [];
+    for (let i = records.length - 1; i >= 0; i--) {
+      const latest = (i === records.length - 1) ? ' class="latest"' : '';
+      parts.push(
+        '<li' + latest + '>' +
+          '<span class="idx">第 ' + (i + 1) + ' 次</span>' +
+          '<span class="val">' + fmt(records[i]) + '</span>' +
+        '</li>'
+      );
+    }
+    logList.innerHTML = parts.join('');
+  }
+
+  /* ---------- 左侧控制 ---------- */
+  function startLeftTimer() {
+    leftElapsed = 0;
+    leftStartTime = performance.now();
+    leftRunning = true;
+    leftTimeEl.textContent = fmt(0);
+    updateUI();
+  }
+
+  function pauseLeftTimer() {
+    if (!leftRunning) return;
+    leftElapsed = performance.now() - leftStartTime;
+    leftRunning = false;
+    leftTimeEl.textContent = fmt(leftElapsed);
+    updateUI();
+  }
+
+  function resumeLeftTimer() {
+    if (leftRunning) return;
+    leftStartTime = performance.now() - leftElapsed;
+    leftRunning = true;
+    updateUI();
+  }
+
+  leftStartPauseBtn.addEventListener('click', function () {
+    if (mode !== 'left') return;
+    if (leftRunning) pauseLeftTimer();
+    else resumeLeftTimer();
+  });
+
+  /* ---------- 右侧控制 ---------- */
+  function startRightTimer(reset) {
+    if (reset) rightRemaining = rightTotal;
+    rightEndTime = performance.now() + rightRemaining;
+    rightRunning = true;
+    rightTimeEl.textContent = fmt(rightRemaining);
+    updateUI();
+  }
+
+  function pauseRightTimer() {
+    if (!rightRunning) return;
+    rightRemaining = rightEndTime - performance.now();
+    if (rightRemaining < 0) rightRemaining = 0;
+    rightRunning = false;
+    rightTimeEl.textContent = fmt(rightRemaining);
+    updateUI();
+  }
+
+  function resumeRightTimer() {
+    if (rightRunning) return;
+    if (rightRemaining <= 0) rightRemaining = rightTotal;
+    rightEndTime = performance.now() + rightRemaining;
+    rightRunning = true;
+    updateUI();
+  }
+
+  rightStartPauseBtn.addEventListener('click', function () {
+    if (mode !== 'right') return;
+    if (rightRunning) pauseRightTimer();
+    else resumeRightTimer();
+  });
+
+  /* ---------- 切换逻辑 ---------- */
+  function switchToRight() {
+    if (mode !== 'left') return;
+
+    // 记录左侧本次用时（如果正在运行则取当前值，否则取已暂停值）
+    const elapsed = leftRunning ? (performance.now() - leftStartTime) : leftElapsed;
+    records.push(elapsed);
+    renderLog();
+
+    // 重置左侧为 0 并暂停
+    leftElapsed = 0;
+    leftRunning = false;
+    leftTimeEl.textContent = fmt(0);
+
+    // 切换模式
+    mode = 'right';
+
+    // 右侧重置为满值并自动开始
+    rightRemaining = rightTotal;
+    rightRunning = false;
+    startRightTimer(true);
+
+    updateUI();
+    playSwitchSound('toRight');
+    restartLoop();
+  }
+
+  function switchToLeft(auto) {
+    if (mode !== 'right') return;
+
+    // 暂停右侧（剩余时间保留，但下次切到右侧会重置）
+    if (rightRunning) {
+      rightRemaining = rightEndTime - performance.now();
+      if (rightRemaining < 0) rightRemaining = 0;
+      rightRunning = false;
+    }
+
+    // 切换模式
+    mode = 'left';
+
+    // 左侧重置为 0 并自动开始
+    leftElapsed = 0;
+    leftRunning = false;
+    startLeftTimer();
+
+    updateUI();
+    playSwitchSound('toLeft');
+    restartLoop();
+  }
+
+  switchBtn.addEventListener('click', function () {
+    if (mode === 'left') switchToRight();
+    else switchToLeft(false);
+  });
+
+  /* ---------- 其他事件 ---------- */
+  clearBtn.addEventListener('click', function () {
+    records = [];
+    renderLog();
+  });
+
+  minutesInput.addEventListener('change', function () {
+    let v = parseFloat(minutesInput.value);
+    if (!isFinite(v) || v <= 0) v = DEFAULT_MINUTES;
+    v = Math.min(Math.round(v * 10) / 10, 180);
+    minutesInput.value = String(v);
+
+    rightTotal = Math.round(v * 60000);
+    rightRemaining = rightTotal;
+    rightTimeEl.textContent = fmt(rightTotal);
+
+    if (mode === 'right') {
+      if (rightRunning) {
+        // 运行中修改 → 重新开始倒计时
+        rightEndTime = performance.now() + rightTotal;
+      } else {
+        rightRunning = false;
+      }
+      updateUI();
+    }
+  });
+
+  // 空格键也能切换
+  document.addEventListener('keydown', function (e) {
+    if (e.code !== 'Space' && e.key !== ' ') return;
+    const t = e.target;
+    if (t && t.closest && t.closest('button, input, textarea')) return;
+    e.preventDefault();
+    switchBtn.click();
+  });
+
+  /* ---------- 启动 ---------- */
+  renderLog();
+  leftTimeEl.textContent = fmt(0);
+  rightTimeEl.textContent = fmt(rightTotal);
+  updateUI();
+  restartLoop();
+
+})();
+</script>
+</body>
+</html>
