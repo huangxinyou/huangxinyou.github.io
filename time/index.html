@@ -6,6 +6,7 @@
 <title>左右双计时器 · 带开始暂停与音效</title>
 <style>
   * { box-sizing: border-box; }
+
   body {
     margin: 0;
     min-height: 100vh;
@@ -280,32 +281,33 @@
   <div class="board">
 
     <!-- 左：正计时 -->
-    <section class="panel left active" id="leftPanel">
+    <section class="panel left" id="leftPanel">
       <div class="tag">正 计 时</div>
       <div class="time" id="leftTime">00:00.0</div>
+      <div class="sub">每次从 0 开始</div>
       <div class="controls">
-        <button class="ctrl-btn" id="leftStartPauseBtn" type="button">开始</button>
+        <button class="ctrl-btn" id="leftStartPauseBtn" type="button" disabled>开始</button>
       </div>
     </section>
 
     <!-- 中：切换 -->
     <div class="center">
       <button class="switch" id="switchBtn" type="button">
-        <span class="arrow" id="arrowIcon">▶</span>
+        <span class="arrow" id="arrowIcon">◀</span>
         <span class="switch-text">切换</span>
       </button>
-      <div class="status" id="status">左侧已暂停</div>
+      <div class="status" id="status">右侧已暂停</div>
     </div>
 
     <!-- 右：倒计时 -->
-    <section class="panel right" id="rightPanel">
+    <section class="panel right active" id="rightPanel">
       <div class="tag">倒 计 时</div>
       <div class="time" id="rightTime">01:00.0</div>
       <div class="sub">
         <label>时长 <input id="minutes" type="number" min="0.1" max="180" step="0.5" value="1" /> 分钟</label>
       </div>
       <div class="controls">
-        <button class="ctrl-btn" id="rightStartPauseBtn" type="button" disabled>开始</button>
+        <button class="ctrl-btn" id="rightStartPauseBtn" type="button">开始</button>
       </div>
     </section>
 
@@ -342,7 +344,7 @@
   const DEFAULT_TOTAL   = DEFAULT_MINUTES * 60000;
 
   /* ---------- 状态 ---------- */
-  let mode = 'left';                         // 'left' | 'right'
+  let mode = 'right';                        // 初始在右侧（倒计时）
 
   // 左侧状态
   let leftRunning   = false;
@@ -402,12 +404,12 @@
 
     const t0 = ctx.currentTime + 0.02;   // 稍微延后，确保调度稳定
 
-    const BEEP_COUNT    = 20;        // 连续 10 声
-    const BEEP_DURATION = 1.0;     // 每声持续 85ms
+    const BEEP_COUNT    = 10;        // 连续 10 声
+    const BEEP_DURATION = 0.085;     // 每声持续 85ms
     const BEEP_INTERVAL = 0.125;     // 每声间隔 125ms（总时长约 1.2 秒）
 
-    const baseFreq = type === 'toRight' ? 1000 : 800;  // 左→右高音 / 右→左低音
-    const peakGain = 1;                            // 音量（已调大）
+    const baseFreq = type === 'toRight' ? 880 : 660;  // 左→右高音 / 右→左低音
+    const peakGain = 0.85;                            // 音量（已调大）
 
     for (let i = 0; i < BEEP_COUNT; i++) {
       const start = t0 + i * BEEP_INTERVAL;
@@ -415,7 +417,7 @@
 
       // 主音：三角波，泛音丰富，听感响亮
       const osc = ctx.createOscillator();
-      osc.type = 'square';
+      osc.type = 'triangle';
       osc.frequency.setValueAtTime(baseFreq, start);
 
       // 泛音：叠加一个八度，增强穿透力
