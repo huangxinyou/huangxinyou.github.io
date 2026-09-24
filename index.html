@@ -1,755 +1,230 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>左右双计时器 · 带清空与删除</title>
-<style>
-  * { box-sizing: border-box; }
-
-  body {
-    margin: 0;
-    min-height: 100vh;
-    padding: 32px 18px 48px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 24px;
-    background:
-      radial-gradient(1000px 520px at 50% -15%, #16233d 0%, rgba(10,14,23,0) 70%),
-      #080b12;
-    color: #e8eefc;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  h1 {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 6px;
-    color: #6f7d9c;
-  }
-
-  /* ---------- 主面板 ---------- */
-  .board {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-
-  .panel {
-    width: 290px;
-    min-height: 250px;
-    padding: 22px 20px;
-    border-radius: 26px;
-    background: rgba(255, 255, 255, .035);
-    border: 1px solid rgba(255, 255, 255, .08);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    transition: background .35s ease, border-color .35s ease,
-                box-shadow .35s ease, transform .35s ease;
-  }
-
-  .panel .tag {
-    font-size: 12px;
-    letter-spacing: 3px;
-    color: #7f8cab;
-  }
-
-  .panel .time {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 46px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-    transition: color .35s ease, text-shadow .35s ease;
-  }
-
-  .panel .sub { font-size: 12px; color: #7f8cab; }
-
-  /* 控制按钮行 */
-  .controls {
-    display: flex;
-    gap: 8px;
-    margin-top: 4px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .ctrl-btn {
-    font-family: inherit;
-    font-size: 13px;
-    padding: 7px 16px;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, .18);
-    background: rgba(255, 255, 255, .06);
-    color: #d0dbf0;
-    cursor: pointer;
-    transition: .2s;
-    min-width: 70px;
-  }
-  .ctrl-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, .14);
-    border-color: rgba(255, 255, 255, .4);
-    color: #fff;
-  }
-  .ctrl-btn:active:not(:disabled) { transform: scale(.95); }
-  .ctrl-btn:disabled {
-    opacity: .35;
-    cursor: not-allowed;
-    filter: grayscale(.5);
-  }
-
-  /* 清空按钮：红色调 */
-  .ctrl-btn.clear-btn {
-    border-color: rgba(255, 120, 120, .28);
-    color: #e8a0a0;
-    min-width: 60px;
-  }
-  .ctrl-btn.clear-btn:hover:not(:disabled) {
-    background: rgba(255, 120, 120, .12);
-    border-color: rgba(255, 120, 120, .55);
-    color: #ffc8c8;
-  }
-
-  /* 左侧高亮 */
-  .panel.left.active {
-    background: rgba(77, 163, 255, .10);
-    border-color: rgba(77, 163, 255, .55);
-    box-shadow: 0 0 40px rgba(77, 163, 255, .18), inset 0 0 40px rgba(77, 163, 255, .05);
-  }
-  .panel.left.active .time { color: #7cc0ff; text-shadow: 0 0 26px rgba(77, 163, 255, .55); }
-  .panel.left.active .tag  { color: #4da3ff; }
-
-  /* 右侧高亮 */
-  .panel.right.active {
-    background: rgba(255, 179, 71, .10);
-    border-color: rgba(255, 179, 71, .55);
-    box-shadow: 0 0 40px rgba(255, 179, 71, .16), inset 0 0 40px rgba(255, 179, 71, .05);
-  }
-  .panel.right.active .time { color: #ffc46b; text-shadow: 0 0 26px rgba(255, 179, 71, .5); }
-  .panel.right.active .tag  { color: #ffb347; }
-
-  /* ---------- 中间切换键 ---------- */
-  .center {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    min-width: 130px;
-  }
-
-  .switch {
-    width: 108px;
-    height: 108px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, .16);
-    background: linear-gradient(160deg, rgba(120, 170, 255, .30), rgba(120, 170, 255, .05));
-    color: #eaf1ff;
-    font-family: inherit;
-    font-size: 14px;
-    letter-spacing: 2px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    transition: transform .18s ease, box-shadow .3s ease,
-                border-color .3s ease, background .3s ease;
-  }
-  .switch:hover {
-    transform: scale(1.05);
-    border-color: rgba(140, 185, 255, .75);
-    box-shadow: 0 0 34px rgba(90, 150, 255, .35);
-  }
-  .switch:active { transform: scale(.95); }
-  .switch .arrow { font-size: 20px; line-height: 1; }
-  .switch .switch-text { font-size: 13px; opacity: .9; }
-
-  .status {
-    font-size: 12px;
-    letter-spacing: 1px;
-    color: #7f8cab;
-    min-height: 16px;
-  }
-
-  /* ---------- 记录区 ---------- */
-  .log {
-    width: min(760px, 100%);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, .08);
-    background: rgba(255, 255, 255, .025);
-    padding: 16px 18px 14px;
-  }
-
-  .log-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-
-  .log-head h2 {
-    margin: 0;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 3px;
-    color: #7f8cab;
-  }
-
-  .clear {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, .14);
-    color: #8e9ab8;
-    font-family: inherit;
-    font-size: 12px;
-    padding: 4px 12px;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: .2s;
-  }
-  .clear:hover { color: #fff; border-color: rgba(255, 255, 255, .35); }
-
-  #logList {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    max-height: 220px;
-    overflow-y: auto;
-  }
-  #logList::-webkit-scrollbar { width: 6px; }
-  #logList::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, .15);
-    border-radius: 3px;
-  }
-
-  #logList li {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 10px 8px 14px;
-    border-radius: 11px;
-    background: rgba(255, 255, 255, .035);
-    font-size: 14px;
-    font-variant-numeric: tabular-nums;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  }
-  #logList li .idx { color: #7f8cab; font-size: 12px; flex-shrink: 0; }
-  #logList li .val { color: #7cc0ff; font-weight: 700; margin-left: auto; }
-  #logList li.latest {
-    background: rgba(77, 163, 255, .13);
-    box-shadow: inset 0 0 0 1px rgba(77, 163, 255, .30);
-  }
-  #logList li.empty {
-    justify-content: center;
-    background: transparent;
-    color: #55617d;
-    font-size: 12.5px;
-    font-family: inherit;
-  }
-
-  /* 单条删除按钮 */
-  .del-btn {
-    flex-shrink: 0;
-    font-family: inherit;
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 100, 100, .3);
-    background: transparent;
-    color: #ff8080;
-    cursor: pointer;
-    transition: .2s;
-  }
-  .del-btn:hover {
-    background: rgba(255, 100, 100, .15);
-    border-color: rgba(255, 100, 100, .65);
-    color: #ffb8b8;
-  }
-  .del-btn:active { transform: scale(.92); }
-
-  /* 时长输入 */
-  .sub input {
-    width: 56px;
-    padding: 4px 6px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, .14);
-    background: rgba(0, 0, 0, .25);
-    color: inherit;
-    font-family: inherit;
-    font-size: 12px;
-    text-align: center;
-  }
-  .sub input:focus {
-    outline: none;
-    border-color: rgba(255, 179, 71, .6);
-  }
-
-  /* ---------- 响应式 ---------- */
-  @media (max-width: 760px) {
-    .board { flex-direction: column; width: 100%; }
-    .panel { width: 100%; max-width: 430px; min-height: 210px; }
-    .panel .time { font-size: 40px; }
-    .switch { width: 92px; height: 92px; }
-    .controls { flex-wrap: wrap; justify-content: center; }
-  }
-</style>
-</head>
-<body>
-
-  <h1>左 右 双 计 时 器</h1>
-
-  <div class="board">
-
-    <!-- 左：正计时 -->
-    <section class="panel left" id="leftPanel">
-      <div class="tag">正 计 时</div>
-      <div class="time" id="leftTime">00:00.0</div>
-      <div class="sub">每次从 0 开始</div>
-      <div class="controls">
-        <button class="ctrl-btn" id="leftStartPauseBtn" type="button" disabled>开始</button>
-        <button class="ctrl-btn clear-btn" id="leftClearBtn" type="button">清空</button>
-      </div>
-    </section>
-
-    <!-- 中：切换 -->
-    <div class="center">
-      <button class="switch" id="switchBtn" type="button">
-        <span class="arrow" id="arrowIcon">◀</span>
-        <span class="switch-text">切换</span>
-      </button>
-      <div class="status" id="status">右侧已暂停</div>
-    </div>
-
-    <!-- 右：倒计时 -->
-    <section class="panel right active" id="rightPanel">
-      <div class="tag">倒 计 时</div>
-      <div class="time" id="rightTime">01:00.0</div>
-      <div class="sub">
-        <label>时长 <input id="minutes" type="number" min="0.1" max="180" step="0.5" value="1" /> 分钟</label>
-      </div>
-      <div class="controls">
-        <button class="ctrl-btn" id="rightStartPauseBtn" type="button">开始</button>
-        <button class="ctrl-btn clear-btn" id="rightClearBtn" type="button">清空</button>
-      </div>
-    </section>
-
-  </div>
-
-  <!-- 记录 -->
-  <div class="log">
-    <div class="log-head">
-      <h2>左 侧 计 时 记 录</h2>
-      <button class="clear" id="clearBtn" type="button">清空全部</button>
-    </div>
-    <ul id="logList"></ul>
-  </div>
-
-<script>
-(function () {
-  'use strict';
-
-  /* ---------- 元素 ---------- */
-  const leftPanel        = document.getElementById('leftPanel');
-  const rightPanel       = document.getElementById('rightPanel');
-  const leftTimeEl       = document.getElementById('leftTime');
-  const rightTimeEl      = document.getElementById('rightTime');
-  const switchBtn        = document.getElementById('switchBtn');
-  const arrowIcon        = document.getElementById('arrowIcon');
-  const statusEl         = document.getElementById('status');
-  const logList          = document.getElementById('logList');
-  const clearBtn         = document.getElementById('clearBtn');
-  const minutesInput     = document.getElementById('minutes');
-  const leftStartPauseBtn  = document.getElementById('leftStartPauseBtn');
-  const rightStartPauseBtn = document.getElementById('rightStartPauseBtn');
-  const leftClearBtn       = document.getElementById('leftClearBtn');
-  const rightClearBtn      = document.getElementById('rightClearBtn');
-
-  const DEFAULT_MINUTES = 1;                 // 默认 1 分钟
-  const DEFAULT_TOTAL   = DEFAULT_MINUTES * 60000;
-
-  /* ---------- 状态 ---------- */
-  let mode = 'right';                        // 初始在右侧（倒计时）
-
-  // 左侧状态
-  let leftRunning   = false;
-  let leftElapsed   = 0;                     // 已累计毫秒
-  let leftStartTime = 0;                     // 运行时的起点 performance.now()
-
-  // 右侧状态
-  let rightTotal     = DEFAULT_TOTAL;        // 总时长
-  let rightRemaining = DEFAULT_TOTAL;        // 剩余时长
-  let rightRunning   = false;
-  let rightEndTime   = 0;                    // 运行时的结束时刻
-
-  let records = [];
-  let rafId   = null;
-
-  /* ---------- 工具 ---------- */
-  function fmt(ms) {
-    if (!isFinite(ms) || ms < 0) ms = 0;
-    const t = Math.floor(ms);
-    const m = Math.floor(t / 60000);
-    const s = Math.floor((t % 60000) / 1000);
-    const d = Math.floor((t % 1000) / 100);   // 十分之一秒
-    return String(m).padStart(2, '0') + ':' +
-           String(s).padStart(2, '0') + '.' + d;
-  }
-
-  /* ---------- 声音效果（连续 10 声） ---------- */
-  let audioCtx = null;
-  function getAudioCtx() {
-    if (!audioCtx) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return null;
-      audioCtx = new AudioCtx();
-    }
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    return audioCtx;
-  }
-
-  let activeOscillators = [];
-  function stopAllSounds() {
-    activeOscillators.forEach(function (o) {
-      try { o.stop(); } catch (e) {}
-    });
-    activeOscillators = [];
-  }
-
-  function playSwitchSound(type) {
-    const ctx = getAudioCtx();
-    if (!ctx) return;
-
-    stopAllSounds();
-
-    const t0 = ctx.currentTime + 0.02;
-
-    const BEEP_COUNT    = 10;        // 连续 10 声
-    const BEEP_DURATION = 0.085;     // 每声持续 85ms
-    const BEEP_INTERVAL = 0.125;     // 每声间隔 125ms（总时长约 1.2 秒）
-
-    const baseFreq = type === 'toRight' ? 880 : 660;  // 左→右高音 / 右→左低音
-    const peakGain = 0.85;                            // 音量（已调大）
-
-    for (let i = 0; i < BEEP_COUNT; i++) {
-      const start = t0 + i * BEEP_INTERVAL;
-      const end   = start + BEEP_DURATION;
-
-      const osc = ctx.createOscillator();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(baseFreq, start);
-
-      const osc2 = ctx.createOscillator();
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(baseFreq * 2, start);
-
-      const g1 = ctx.createGain();
-      const g2 = ctx.createGain();
-
-      g1.gain.setValueAtTime(0.0001, start);
-      g1.gain.exponentialRampToValueAtTime(peakGain, start + 0.01);
-      g1.gain.exponentialRampToValueAtTime(0.0001, end);
-
-      g2.gain.setValueAtTime(0.0001, start);
-      g2.gain.exponentialRampToValueAtTime(peakGain * 0.45, start + 0.01);
-      g2.gain.exponentialRampToValueAtTime(0.0001, end);
-
-      osc.connect(g1);
-      osc2.connect(g2);
-      g1.connect(ctx.destination);
-      g2.connect(ctx.destination);
-
-      osc.start(start);
-      osc2.start(start);
-      osc.stop(end);
-      osc2.stop(end);
-
-      activeOscillators.push(osc, osc2);
-    }
-
-    setTimeout(function () {
-      activeOscillators = [];
-    }, (BEEP_COUNT * BEEP_INTERVAL + 0.4) * 1000);
-  }
-
-  /* ---------- 主循环 ---------- */
-  function frame() {
-    const now = performance.now();
-
-    if (mode === 'left') {
-      if (leftRunning) {
-        leftElapsed = now - leftStartTime;
-        leftTimeEl.textContent = fmt(leftElapsed);
-      }
-      rafId = requestAnimationFrame(frame);
-      return;
-    }
-
-    if (rightRunning) {
-      const remain = rightEndTime - now;
-      if (remain <= 0) {
-        rightRemaining = 0;
-        rightTimeEl.textContent = fmt(0);
-        rightRunning = false;
-        switchToLeft(true);
-        return;
-      }
-      rightRemaining = remain;
-      rightTimeEl.textContent = fmt(remain);
-    }
-    rafId = requestAnimationFrame(frame);
-  }
-
-  function restartLoop() {
-    if (rafId !== null) {
-      cancelAnimationFrame(rafId);
-      rafId = null;
-    }
-    rafId = requestAnimationFrame(frame);
-  }
-
-  /* ---------- 界面更新 ---------- */
-  function updateUI() {
-    const isLeft = (mode === 'left');
-    leftPanel.classList.toggle('active', isLeft);
-    rightPanel.classList.toggle('active', !isLeft);
-    arrowIcon.textContent = isLeft ? '▶' : '◀';
-    statusEl.textContent  = isLeft
-      ? (leftRunning ? '左侧正计时中' : '左侧已暂停')
-      : (rightRunning ? '右侧倒计时中' : '右侧已暂停');
-
-    // 左侧按钮
-    leftStartPauseBtn.disabled = !isLeft;
-    if (isLeft) {
-      leftStartPauseBtn.textContent = leftRunning
-        ? '暂停'
-        : (leftElapsed > 0 ? '继续' : '开始');
-    }
-
-    // 右侧按钮
-    rightStartPauseBtn.disabled = isLeft;
-    if (!isLeft) {
-      rightStartPauseBtn.textContent = rightRunning
-        ? '暂停'
-        : (rightRemaining < rightTotal && rightRemaining > 0 ? '继续' : '开始');
-    }
-  }
-
-  function renderLog() {
-    if (records.length === 0) {
-      logList.innerHTML =
-        '<li class="empty">还没有记录 — 从左边切到右边时会自动记下左侧用时</li>';
-      return;
-    }
-    const parts = [];
-    for (let i = records.length - 1; i >= 0; i--) {
-      const latest = (i === records.length - 1) ? ' class="latest"' : '';
-      parts.push(
-        '<li' + latest + '>' +
-          '<span class="idx">第 ' + (i + 1) + ' 次</span>' +
-          '<span class="val">' + fmt(records[i]) + '</span>' +
-          '<button class="del-btn" type="button" data-index="' + i + '">删除</button>' +
-        '</li>'
-      );
-    }
-    logList.innerHTML = parts.join('');
-  }
-
-  /* ---------- 左侧控制 ---------- */
-  function startLeftTimer() {
-    leftElapsed = 0;
-    leftStartTime = performance.now();
-    leftRunning = true;
-    leftTimeEl.textContent = fmt(0);
-    updateUI();
-  }
-
-  function pauseLeftTimer() {
-    if (!leftRunning) return;
-    leftElapsed = performance.now() - leftStartTime;
-    leftRunning = false;
-    leftTimeEl.textContent = fmt(leftElapsed);
-    updateUI();
-  }
-
-  function resumeLeftTimer() {
-    if (leftRunning) return;
-    leftStartTime = performance.now() - leftElapsed;
-    leftRunning = true;
-    updateUI();
-  }
-
-  leftStartPauseBtn.addEventListener('click', function () {
-    if (mode !== 'left') return;
-    if (leftRunning) pauseLeftTimer();
-    else resumeLeftTimer();
-  });
-
-  // 左侧清空
-  leftClearBtn.addEventListener('click', function () {
-    leftRunning   = false;
-    leftElapsed   = 0;
-    leftStartTime = 0;
-    leftTimeEl.textContent = fmt(0);
-    updateUI();
-  });
-
-  /* ---------- 右侧控制 ---------- */
-  function startRightTimer(reset) {
-    if (reset) rightRemaining = rightTotal;
-    rightEndTime = performance.now() + rightRemaining;
-    rightRunning = true;
-    rightTimeEl.textContent = fmt(rightRemaining);
-    updateUI();
-  }
-
-  function pauseRightTimer() {
-    if (!rightRunning) return;
-    rightRemaining = rightEndTime - performance.now();
-    if (rightRemaining < 0) rightRemaining = 0;
-    rightRunning = false;
-    rightTimeEl.textContent = fmt(rightRemaining);
-    updateUI();
-  }
-
-  function resumeRightTimer() {
-    if (rightRunning) return;
-    if (rightRemaining <= 0) rightRemaining = rightTotal;
-    rightEndTime = performance.now() + rightRemaining;
-    rightRunning = true;
-    updateUI();
-  }
-
-  rightStartPauseBtn.addEventListener('click', function () {
-    if (mode !== 'right') return;
-    if (rightRunning) pauseRightTimer();
-    else resumeRightTimer();
-  });
-
-  // 右侧清空（恢复为满值并暂停）
-  rightClearBtn.addEventListener('click', function () {
-    rightRunning   = false;
-    rightRemaining = rightTotal;
-    rightTimeEl.textContent = fmt(rightTotal);
-    updateUI();
-  });
-
-  /* ---------- 切换逻辑 ---------- */
-  function switchToRight() {
-    if (mode !== 'left') return;
-
-    const elapsed = leftRunning ? (performance.now() - leftStartTime) : leftElapsed;
-    records.push(elapsed);
-    renderLog();
-
-    leftElapsed = 0;
-    leftRunning = false;
-    leftTimeEl.textContent = fmt(0);
-
-    mode = 'right';
-
-    rightRemaining = rightTotal;
-    rightRunning = false;
-    startRightTimer(true);
-
-    updateUI();
-    playSwitchSound('toRight');
-    restartLoop();
-  }
-
-  function switchToLeft(auto) {
-    if (mode !== 'right') return;
-
-    if (rightRunning) {
-      rightRemaining = rightEndTime - performance.now();
-      if (rightRemaining < 0) rightRemaining = 0;
-      rightRunning = false;
-    }
-
-    mode = 'left';
-
-    leftElapsed = 0;
-    leftRunning = false;
-    startLeftTimer();
-
-    updateUI();
-    playSwitchSound('toLeft');
-    restartLoop();
-  }
-
-  switchBtn.addEventListener('click', function () {
-    if (mode === 'left') switchToRight();
-    else switchToLeft(false);
-  });
-
-  /* ---------- 记录区事件 ---------- */
-  // 清空全部记录
-  clearBtn.addEventListener('click', function () {
-    records = [];
-    renderLog();
-  });
-
-  // 单条删除（事件委托）
-  logList.addEventListener('click', function (e) {
-    const btn = e.target.closest('.del-btn');
-    if (!btn) return;
-    const idx = parseInt(btn.getAttribute('data-index'), 10);
-    if (isNaN(idx) || idx < 0 || idx >= records.length) return;
-    records.splice(idx, 1);
-    renderLog();
-  });
-
-  /* ---------- 时长输入 ---------- */
-  minutesInput.addEventListener('change', function () {
-    let v = parseFloat(minutesInput.value);
-    if (!isFinite(v) || v <= 0) v = DEFAULT_MINUTES;
-    v = Math.min(Math.round(v * 10) / 10, 180);
-    minutesInput.value = String(v);
-
-    rightTotal = Math.round(v * 60000);
-    rightRemaining = rightTotal;
-    rightTimeEl.textContent = fmt(rightTotal);
-
-    if (mode === 'right') {
-      if (rightRunning) {
-        rightEndTime = performance.now() + rightTotal;
-      } else {
-        rightRunning = false;
-      }
-      updateUI();
-    }
-  });
-
-  // 空格键也能切换
-  document.addEventListener('keydown', function (e) {
-    if (e.code !== 'Space' && e.key !== ' ') return;
-    const t = e.target;
-    if (t && t.closest && t.closest('button, input, textarea')) return;
-    e.preventDefault();
-    switchBtn.click();
-  });
-
-  /* ---------- 启动 ---------- */
-  renderLog();
-  leftTimeEl.textContent = fmt(0);
-  rightTimeEl.textContent = fmt(rightTotal);
-  updateUI();
-  restartLoop();
-
-})();
-</script>
-</body>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专题成绩表</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* ===== 原有背景动画 ===== */
+        .hero {
+            min-height: 100vh;
+            animation: bgFlow 10s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgFlow {
+            0% {
+                background-position: 0% 0%, 0% 0%, 0% 0%;
+            }
+            25% {
+                background-position: 0% 0%, 0% 0%, 100% 0%;
+            }
+            50% {
+                background-position: 0% 0%, 0% 0%, 100% 100%;
+            }
+            75% {
+                background-position: 0% 0%, 0% 0%, 0% 100%;
+            }
+            100% {
+                background-position: 0% 0%, 0% 0%, 50% 50%;
+            }
+        }
+
+        /* ===== 容器 & 基础 ===== */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* 让所有子元素水平居中 */
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* ===== 标题样式 ===== */
+        .main-title {
+            font-size: 4rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            margin-bottom: 2.5rem;
+            letter-spacing: 4px;
+        }
+
+        /* ===== 三个链接容器 ===== */
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 3rem;
+            /* 链接之间的间距 */
+        }
+
+        /* ===== 单个链接样式 ===== */
+        .nav-link {
+            font-size: 2.25rem;
+            /* text-4xl */
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            letter-spacing: 2px;
+        }
+
+        /* 链接悬停效果：上浮 + 发光 + 轻微缩放 */
+        .nav-link:hover {
+            transform: translateY(-4px) scale(1.04);
+            color: #f0f9ff;
+            text-shadow: 0 6px 24px rgba(255, 255, 255, 0.25);
+        }
+
+        /* 链接底部装饰线（悬停时出现） */
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -4px;
+            width: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .nav-link:hover::after {
+            width: 80%;
+        }
+
+        /* ===== 响应式微调 ===== */
+        @media (max-width: 640px) {
+            .main-title {
+                font-size: 2.8rem;
+            }
+            .nav-link {
+                font-size: 1.6rem;
+                /* 手机端稍小，但仍然突出 */
+                padding: 0.3rem 0.6rem;
+            }
+            .nav-links {
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .main-title {
+                font-size: 2.2rem;
+            }
+            .nav-link {
+                font-size: 1.3rem;
+            }
+            .nav-links {
+                gap: 1rem;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* ===== 原有评分样式（保留） ===== */
+        .score_10 {
+            color: forestgreen;
+        }
+        .score_9 {
+            color: #34d034;
+        }
+        .score_8 {
+            color: #41f741;
+        }
+        .score_7 {
+            color: #52ff00;
+        }
+        .score_6 {
+            color: #a5ff00;
+        }
+        .score_5 {
+            color: #c8ff00;
+        }
+        .score_4 {
+            color: #ffd800;
+        }
+        .score_3 {
+            color: #ffa900;
+        }
+        .score_2 {
+            color: #ff6200;
+        }
+        .score_1 {
+            color: #ff4b00;
+        }
+        .score_0 {
+            color: red;
+        }
+    </style>
+
+    <script>
+        /**
+         * 生成完全随机的 HSL 颜色（带透明度可选）
+         */
+        function randomHSL(alpha = 1) {
+            const h = Math.floor(Math.random() * 360);
+            const s = 40 + Math.floor(Math.random() * 41);
+            const l = 50 + Math.floor(Math.random() * 31);
+            if (alpha >= 1) return `hsl(${h}, ${s}%, ${l}%)`;
+            return `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
+        }
+
+        /**
+         * 生成完全随机的背景样式（三层叠加）
+         */
+        function generateRandomBackground() {
+            const x1 = 10 + Math.random() * 80;
+            const y1 = 10 + Math.random() * 80;
+            const x2 = 10 + Math.random() * 80;
+            const y2 = 10 + Math.random() * 80;
+
+            const glow1 = randomHSL(0.20 + Math.random() * 0.15);
+            const glow2 = randomHSL(0.20 + Math.random() * 0.15);
+
+            const colorCount = 10 + Math.floor(Math.random() * 6);
+            const colors = [];
+            for (var i = 0; i < colorCount; i++) {
+                colors.push(randomHSL(1));
+            }
+
+            const angle = Math.floor(Math.random() * 360);
+
+            return `
+                radial-gradient(ellipse at ${x1}% ${y1}%, ${glow1} 0%, transparent 50%),
+                radial-gradient(ellipse at ${x2}% ${y2}%, ${glow2} 0%, transparent 50%),
+                linear-gradient(${angle}deg, ${colors.join(', ')})
+            `.trim();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const hero = document.querySelector('.hero');
+            if (hero) {
+                hero.style.background = generateRandomBackground();
+                hero.style.backgroundSize = '100% 100%, 100% 100%, 600% 600%';
+            }
+        });
+    </script>
+
+ <div class="container">
+        <!-- ===== 标题 ===== -->
+        <h1 class="main-title">2026</h1>
+
+        <!-- ===== 三个导航链接：居中 + 变大 ===== -->
+        <div class="nav-links">
+            <a href="/2026spring" target="_blank" class="nav-link">2026春季</a>
+            <a href="/2026summer" target="_blank" class="nav-link">2026暑假</a>
+            <a href="/2026autumn" target="_blank" class="nav-link">2026秋季</a>
+        </div>
+         </div>
+        </body>
 </html>
