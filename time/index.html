@@ -437,19 +437,19 @@
 
     const t0 = ctx.currentTime + 0.02;
 
-    const BEEP_COUNT    = 10;        // 连续 10 声
-    const BEEP_DURATION = 0.085;     // 每声持续 85ms
+    const BEEP_COUNT    = 20;        // 连续 10 声
+    const BEEP_DURATION = 1;     // 每声持续 85ms
     const BEEP_INTERVAL = 0.125;     // 每声间隔 125ms（总时长约 1.2 秒）
 
-    const baseFreq = type === 'toRight' ? 880 : 660;  // 左→右高音 / 右→左低音
-    const peakGain = 0.85;                            // 音量（已调大）
+    const baseFreq = type === 'toRight' ? 1000 : 800;  // 左→右高音 / 右→左低音
+    const peakGain = 1;                            // 音量（已调大）
 
     for (let i = 0; i < BEEP_COUNT; i++) {
       const start = t0 + i * BEEP_INTERVAL;
       const end   = start + BEEP_DURATION;
 
       const osc = ctx.createOscillator();
-      osc.type = 'triangle';
+      osc.type = 'square';
       osc.frequency.setValueAtTime(baseFreq, start);
 
       const osc2 = ctx.createOscillator();
